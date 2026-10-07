@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNIK NATURALS | Oil & Flour Mill ERP • Admin Dashboard</title>
+  <meta name="description" content="UNIK NATURALS - Cold-Pressed Oils, Flour Mill, Repacking & Retail ERP with Live P&L Statement">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="logo.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (var reg of registrations) {
+          reg.unregister();
+        }
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Fullscreen Login Portal Modal -->
+  <div id="auth-modal" class="auth-modal-overlay">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo-wrap">
+          <img src="logo.png" alt="UNIK NATURALS" class="auth-logo">
+        </div>
+        <h2>UNIK NATURALS</h2>
+        <p class="auth-sub">Cold-Pressed Oils & Mill ERP • Login Portal</p>
+        <span class="auth-sub-te">షాప్ యజమాని & స్టాఫ్ లాగిన్ పోర్టల్</span>
+      </div>
+
+      <form id="auth-form" class="auth-form" autocomplete="off">
+        <div id="auth-error" class="auth-error-alert" style="display: none;"></div>
+
+        <div class="auth-input-group">
+          <label for="login-username">👤 Username / యూజర్ నేమ్</label>
+          <div class="input-with-icon">
+            <input type="text" id="login-username" class="auth-input" placeholder="Enter username (admin or staff)" required autofocus>
+          </div>
+        </div>
+
+        <div class="auth-input-group">
+          <label for="login-password">🔒 Password / పాస్‌వర్డ్</label>
+          <div class="input-with-icon">
+            <input type="password" id="login-password" class="auth-input" placeholder="Enter password" required>
+            <button type="button" class="btn-toggle-pw" id="btn-toggle-pw" title="Show/Hide Password">👁️</button>
+          </div>
+        </div>
+
+        <div class="auth-options">
+          <label class="remember-label">
+            <input type="checkbox" id="login-remember" checked>
+            <span>Remember me (నన్ను గుర్తుంచుకో)</span>
+          </label>
+        </div>
+
+        <button type="submit" id="btn-login-submit" class="btn btn-primary auth-submit-btn">
+          🚀 లాగిన్ అవ్వండి / Login
+        </button>
+      </form>
+
+      <div class="auth-demo-section">
+        <div class="demo-title">⚡ Quick Autofill Demo / త్వరిత లాగిన్:</div>
+        <div class="demo-buttons">
+          <button type="button" class="btn-demo-fill admin-fill" id="btn-demo-admin">
+            <strong>👑 Admin (Owner)</strong>
+            <small>admin / admin123</small>
+          </button>
+          <button type="button" class="btn-demo-fill staff-fill" id="btn-demo-staff">
+            <strong>👤 Counter Staff</strong>
+            <small>staff / staff123</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="auth-footer-pos" style="border-top: 1px solid rgba(211, 151, 21, 0.25); margin-top: 1.25rem; padding-top: 0.85rem; text-align: center; font-size: 0.85rem; color: #9CA3AF;">
+        <span style="display: block; color: var(--brand-gold-bright); font-weight: 700; margin-bottom: 4px;">🔐 సింగిల్ యూనిఫైడ్ లాగిన్ (Single Unified Login)</span>
+        <span>👑 Admin &rarr; ERP డ్యాష్‌బోర్డ్ &nbsp;|&nbsp; 👤 Staff &rarr; నేరుగా POS బిల్లింగ్</span>
+        <div style="margin-top: 0.85rem;">
+          <a href="/pos/?mode=customer" target="_blank" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; background: rgba(22, 70, 16, 0.45); border: 1.5px solid var(--brand-gold); color: #fff; border-radius: 10px; padding: 0.65rem 1rem; font-weight: 700; transition: all 0.2s;">
+            <span>🛍️</span>
+            <span>కస్టమర్ ఆన్‌లైన్ షాప్ (Customer Online Store) &rarr;</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo-wrapper">
+          <img src="logo.png" alt="UNIK NATURALS Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-info">
+          <h1>UNIK NATURALS</h1>
+          <span>Cold-Pressed Oils & Mill ERP • Owner Dashboard</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" id="nav-tabs">
+        <button class="nav-tab-btn active" data-tab="tab-overview" id="nav-btn-overview">📊 Dashboard & P&L</button>
+        <button class="nav-tab-btn" data-tab="tab-production" id="nav-btn-production">🛢️ Oil Production</button>
+        <button class="nav-tab-btn" data-tab="tab-inventory" id="nav-btn-inventory">📦 Inventory & Stock</button>
+        <button class="nav-tab-btn" data-tab="tab-milling" id="nav-btn-milling">🌾 Milling Services</button>
+        <button class="nav-tab-btn" data-tab="tab-cash-audit" id="nav-btn-cash-audit">💰 Cash Audit</button>
+        <button class="nav-tab-btn" data-tab="tab-expenses" id="nav-btn-expenses">💸 Expenses</button>
+        <button class="nav-tab-btn" data-tab="tab-bills" id="nav-btn-bills">🧾 Sales Bills</button>
+        <button class="nav-tab-btn" data-tab="tab-khata" id="nav-btn-khata">📒 Customer Khata</button>
+        <button class="nav-tab-btn" data-tab="tab-online-orders" id="nav-btn-online-orders">🌐 Online Orders (ఆన్‌లైన్)</button>
+        <button class="nav-tab-btn" data-tab="tab-users" id="nav-btn-users">👥 Staff & Users</button>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Logged-in User Profile Badge -->
+        <div class="user-profile-badge" id="user-profile-badge">
+          <div class="user-avatar" id="header-user-avatar">👑</div>
+          <div class="user-details">
+            <span class="user-name" id="header-user-name">Admin</span>
+            <span class="user-role-tag admin" id="header-user-role">OWNER</span>
+          </div>
+        </div>
+
+        <!-- Prominent Logout Button -->
+        <button class="btn btn-logout-prominent" id="btn-header-logout" title="ఖాతా నుండి లాగౌట్ అవ్వండి / Logout Account">
+          <span>🚪</span>
+          <span style="font-weight: 700;">లాగౌట్ / Logout</span>
+        </button>
+
+        <div class="live-badge">
+          <span class="pulse-dot"></span>
+          <span>Live</span>
+        </div>
+        <a href="/pos/?mode=customer" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none;" title="Open Customer Online Store">🛍️ Storefront</a>
+        <a href="/pos/" target="_blank" class="btn btn-primary btn-sm" style="text-decoration: none;" title="Open Staff Mobile Billing App">📱 Staff POS</a>
+        <button class="btn btn-secondary btn-sm" id="btn-refresh" title="Refresh Live Data">🔄</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Body -->
+  <main class="main-content">
+
+    <!-- ==================== TAB 1: OVERVIEW & REAL P&L ==================== -->
+    <div class="tab-pane active" id="tab-overview">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Business Performance & Financial Summary</h2>
+          <p>Real-time retail sales, job-work milling fees, operating costs, and clean take-home net profit</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <select id="pnl-range-select" class="form-control" style="width: 150px; padding: 0.45rem;">
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Top Metric Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Total Revenue</span>
+            <span class="metric-icon">💰</span>
+          </div>
+          <div class="metric-value" id="stat-total-sales">₹0</div>
+          <div class="metric-sub">Total Bills Issued: <strong id="stat-bills-count">0</strong></div>
+        </div>
+
+        <div class="metric-card cash">
+          <div class="metric-header">
+            <span class="metric-title">Cash in Register</span>
+            <span class="metric-icon">💵</span>
+          </div>
+          <div class="metric-value" id="stat-cash-sales">₹0</div>
+          <div class="metric-sub">PhonePe / UPI: <strong id="stat-upi-sales">₹0</strong></div>
+        </div>
+
+        <div class="metric-card milling">
+          <div class="metric-header">
+            <span class="metric-title">Job Work Milling Income</span>
+            <span class="metric-icon">🌾</span>
+          </div>
+          <div class="metric-value" id="stat-milling-income">₹0</div>
+          <div class="metric-sub">Flour, Spices & Oil Expelling fees</div>
+        </div>
+
+        <div class="metric-card profit">
+          <div class="metric-header">
+            <span class="metric-title">Net Take-Home Profit</span>
+            <span class="metric-icon">📈</span>
+          </div>
+          <div class="metric-value" id="stat-net-profit">₹0</div>
+          <div class="metric-sub">Net Profit Margin: <strong id="stat-profit-margin">0%</strong></div>
+        </div>
+
+        <div class="metric-card" style="border-top-color: #8B5CF6;">
+          <div class="metric-header">
+            <span class="metric-title">Customer Khata (Credit Due)</span>
+            <span class="metric-icon">📒</span>
+          </div>
+          <div class="metric-value" id="stat-khata-due" style="color: #8B5CF6;">₹0</div>
+          <div class="metric-sub">Accounts with Due: <strong id="stat-khata-count">0</strong></div>
+        </div>
+      </div>
+
+      <!-- Detailed Profit & Loss Statement -->
+      <div class="card">
+        <div class="section-header" style="margin-bottom: 1rem;">
+          <div class="section-title">
+            <h3>Real-Time Profit & Loss Statement</h3>
+            <p>Comprehensive accounting breakdown of all revenues (+) and costs (-)</p>
+          </div>
+        </div>
+
+        <div class="pnl-container">
+          <!-- Income Column -->
+          <div class="pnl-box">
+            <h3 style="color: var(--success);">
+              <span>Gross Revenues</span>
+              <span>[ + ]</span>
+            </h3>
+            <div class="pnl-row">
+              <span>Bottled Oils & Packaged Goods Sold:</span>
+              <strong id="pnl-retail-rev">₹0</strong>
+            </div>
+            <div class="pnl-row">
+              <span>Customer Milling & Expelling Job Work:</span>
+              <strong id="pnl-milling-rev">₹0</strong>
+            </div>
+            <div class="pnl-row highlight">
+              <span>Total Gross Revenue:</span>
+              <strong style="color: var(--success);" id="pnl-total-rev">₹0</strong>
+            </div>
+          </div>
+
+          <!-- Costs Column -->
+          <div class="pnl-box">
+            <h3 style="color: var(--danger);">
+              <span>Direct Outflows & Costs</span>
+              <span>[ - ]</span>
+            </h3>
+            <div class="pnl-row">
+              <span>Cost of Goods Sold (COGS - Seeds/Packaging):</span>
+              <strong id="pnl-cogs">₹0</strong>
+            </div>
+            <div class="pnl-row">
+              <span>Operating Expenses (Power, Rent, Wages, Maintenance):</span>
+              <strong id="pnl-expenses">₹0</strong>
+            </div>
+            <div class="pnl-row highlight">
+              <span>Total Costs & Outflows:</span>
+              <strong style="color: var(--danger);" id="pnl-total-costs">₹0</strong>
+            </div>
+          </div>
+
+          <!-- Net Profit Bottom Bar -->
+          <div class="pnl-net-result" id="pnl-net-banner">
+            <div>
+              <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                Clean Take-Home Net Profit
+              </div>
+              <div style="font-size: 2.2rem; font-weight: 800; font-family: 'Outfit';" id="pnl-clean-net">
+                ₹0
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge badge-success" id="pnl-status-badge" style="font-size: 0.85rem; padding: 0.4rem 0.9rem;">Profitable</span>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">Net Margin: <strong id="pnl-margin-badge">0%</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Shortcuts -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-header" style="margin-bottom: 0.75rem;">
+            <h3>Quick Actions</h3>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" id="btn-open-batch-modal">🛢️ New Crushing Batch</button>
+            <button class="btn btn-secondary" id="btn-open-bottling-modal">🧴 Bottling & Packaging</button>
+            <button class="btn btn-danger" id="btn-open-expense-modal">💸 Record Expense</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header" style="margin-bottom: 0.75rem;">
+            <h3>Top Selling Products</h3>
+          </div>
+          <div id="top-selling-list" style="font-size: 0.85rem; color: var(--text-muted);">
+            No sales recorded in this period yet.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: OIL PRODUCTION & BOTTLING ==================== -->
+    <div class="tab-pane" id="tab-production">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>🛢️ Oil Production & Bottle Costing Hub</h2>
+          <p>Cold-pressed oil crushing, machine run time, power, labor, oil cake deduction & per-bottle COGS unit economics</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-primary" id="btn-trigger-batch-modal">➕ New Crushing Batch</button>
+          <button class="btn btn-secondary" id="btn-trigger-bottling-modal">🧴 Log Bottling</button>
+        </div>
+      </div>
+
+      <!-- Live Formula & Economics Summary Banner -->
+      <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(18, 57, 12, 0.45) 0%, rgba(14, 31, 18, 0.85) 100%); border: 1px solid rgba(211, 151, 21, 0.35);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--brand-gold-bright); font-size: 1.15rem; margin-bottom: 0.25rem;">
+              <span>📊 Cost per Bottle Calculation Formula</span>
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+              Incorporating raw seeds, freight, 5HP machine power & operator wages, minus oil cake recovery, plus bottle, cap, and label costs.
+            </p>
+          </div>
+          <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; background: rgba(52, 211, 153, 0.15); border: 1px solid var(--success);">
+            ✓ Live Automated COGS Engine
+          </span>
+        </div>
+
+        <!-- Formula Flow Steps Visual -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div style="background: var(--surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-md); border-left: 3px solid #FBBF24;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">1. Raw Material & Freight</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-top: 0.2rem;">Seeds + Transport</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Seed Cost + ₹1.50/kg Freight</div>
+          </div>
+          <div style="background: var(--surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-md); border-left: 3px solid #38BDF8;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">2. Machine Run Cost</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-top: 0.2rem;">5HP Power + Labor</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Power Bill + ₹400/day Labor</div>
+          </div>
+          <div style="background: var(--surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-md); border-left: 3px solid #34D399;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">3. Less: Cake Recovery</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #34D399; margin-top: 0.2rem;">- ₹35 / Kg Cake Value</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Deducted from gross oil cost</div>
+          </div>
+          <div style="background: var(--surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-md); border-left: 3px solid var(--brand-gold);">
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">4. Packaging Materials</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-gold-bright); margin-top: 0.2rem;">Bottle + Label + Cap</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Bottle ₹9 + Label ₹1.5 + Pack ₹2</div>
+          </div>
+        </div>
+
+        <!-- 3 Quick KPI Cards for Standard 1L, 500ml, 5L -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div style="background: rgba(14, 31, 18, 0.7); border: 1px solid rgba(211, 151, 21, 0.25); border-radius: var(--radius-md); padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">🍾 1 Litre Bottle</span>
+              <span class="badge badge-oil">Standard 1L</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+              <span>Total Cost (COGS):</span>
+              <strong style="color: var(--warning);" id="summary-cost-1l">~₹184 - ₹198</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+              <span>Retail MRP:</span>
+              <strong style="color: var(--text-main);" id="summary-mrp-1l">₹240 - ₹270</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; padding-top: 0.4rem; border-top: 1px dashed rgba(255,255,255,0.1);">
+              <span style="color: var(--success);">Net Profit:</span>
+              <span style="color: var(--success);" id="summary-profit-1l">+₹56 - ₹72 (24% Margin)</span>
+            </div>
+          </div>
+
+          <div style="background: rgba(14, 31, 18, 0.7); border: 1px solid rgba(211, 151, 21, 0.25); border-radius: var(--radius-md); padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">🧴 500 ml Bottle</span>
+              <span class="badge badge-oil">Small 500ml</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+              <span>Total Cost (COGS):</span>
+              <strong style="color: var(--warning);" id="summary-cost-500ml">~₹96 - ₹103</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+              <span>Retail MRP:</span>
+              <strong style="color: var(--text-main);" id="summary-mrp-500ml">₹125 - ₹140</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; padding-top: 0.4rem; border-top: 1px dashed rgba(255,255,255,0.1);">
+              <span style="color: var(--success);">Net Profit:</span>
+              <span style="color: var(--success);" id="summary-profit-500ml">+₹29 - ₹38 (24% Margin)</span>
+            </div>
+          </div>
+
+          <div style="background: rgba(14, 31, 18, 0.7); border: 1px solid rgba(211, 151, 21, 0.25); border-radius: var(--radius-md); padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">🛢️ 5 Litre Family Can</span>
+              <span class="badge badge-oil">Bulk Can 5L</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+              <span>Total Cost (COGS):</span>
+              <strong style="color: var(--warning);" id="summary-cost-5l">~₹899 - ₹965</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+              <span>Retail MRP:</span>
+              <strong style="color: var(--text-main);" id="summary-mrp-5l">₹1,152 - ₹1,300</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; padding-top: 0.4rem; border-top: 1px dashed rgba(255,255,255,0.1);">
+              <span style="color: var(--success);">Net Profit:</span>
+              <span style="color: var(--success);" id="summary-profit-5l">+₹253 - ₹336 (23% Margin)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h3>Recent Oil Crushing Batches & Production Costing</h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted);">Direct seed costs, machine run power & labor, byproduct cake deduction, and unit economics per batch</p>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="batches-table">
+            <thead>
+              <tr>
+                <th>Date & Batch</th>
+                <th>Seed Type</th>
+                <th>Input (Kg & Cost)</th>
+                <th>Run Time</th>
+                <th>Yield (Oil & Cake)</th>
+                <th>Net Cost / Ltr</th>
+                <th>1L Bottle Cost</th>
+                <th>Cost Breakdown</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Batches loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: INVENTORY & STOCK ==================== -->
+    <div class="tab-pane" id="tab-inventory">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Live Inventory & Warehouse Stock</h2>
+          <p>Bottled oils, repacked dry groceries, snacks, raw seeds, and packaging containers</p>
+        </div>
+      </div>
+
+      <!-- Finished Retail Items -->
+      <div class="card">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h3>Finished Goods Stock (Retail Products)</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Finished oil bottles, retail packs, selling prices, production cost, and live stock</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="window.syncAllOilCostsToInventory()" style="display: flex; align-items: center; gap: 0.4rem; border-color: rgba(211, 151, 21, 0.45);">
+              <span>⚡ Sync Production Costs</span>
+            </button>
+            <button class="btn btn-primary" id="btn-open-new-product-modal">➕ Add New Product</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="inventory-table">
+            <thead>
+              <tr>
+                <th style="width: 60px;">Photo</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>MRP / Selling Price</th>
+                <th>Cost Price (COGS)</th>
+                <th>Gross Margin (%)</th>
+                <th>In-Stock Qty</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Items loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Raw Materials & Packaging Stock -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h3>🥜 Raw Materials & 📦 Packaging Stock</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Oil seeds, empty bottles, cans, caps, sticker labels, and packaging bags stock & purchase log</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary" id="btn-open-material-purchase-modal" style="display: flex; align-items: center; gap: 0.4rem; border-color: rgba(56, 189, 248, 0.45);">
+              <span>📥 Inward Purchase</span>
+            </button>
+            <button class="btn btn-primary" id="btn-open-new-material-modal" style="display: flex; align-items: center; gap: 0.4rem;">
+              <span>➕ Add Material</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+          <button class="btn btn-sm mat-filter-btn active" data-filter="ALL" style="border-radius: var(--radius-full); padding: 0.35rem 0.85rem;">All Materials</button>
+          <button class="btn btn-sm mat-filter-btn" data-filter="SEEDS" style="border-radius: var(--radius-full); padding: 0.35rem 0.85rem;">🥜 Oil Seeds</button>
+          <button class="btn btn-sm mat-filter-btn" data-filter="PACKAGING" style="border-radius: var(--radius-full); padding: 0.35rem 0.85rem;">📦 Packaging</button>
+          <button class="btn btn-sm mat-filter-btn" data-filter="BULK_FOOD" style="border-radius: var(--radius-full); padding: 0.35rem 0.85rem;">🌾 Grains & Pulses</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="raw-materials-table">
+            <thead>
+              <tr>
+                <th>Material Name</th>
+                <th>Type</th>
+                <th>Available Stock</th>
+                <th>Avg Cost / Unit</th>
+                <th>Total Stock Value</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Raw materials loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 4: MILLING SERVICES & RATES ==================== -->
+    <div class="tab-pane" id="tab-milling">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Job Work Milling Rates (₹ Per Kg)</h2>
+          <p>Configured charges for customer flour milling, spice grinding, and custom oil expelling</p>
+        </div>
+        <div>
+          <button class="btn btn-primary" id="btn-open-milling-modal">➕ Add New Service</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-responsive">
+          <table class="data-table" id="milling-rates-table">
+            <thead>
+              <tr>
+                <th>Service Name</th>
+                <th>Regional Name</th>
+                <th>Service Type</th>
+                <th>Labor Rate (₹ Per Kg)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Milling services loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 5: STAFF CASH AUDIT ==================== -->
+    <div class="tab-pane" id="tab-cash-audit">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Evening Cash Tally & Staff Reconciliation</h2>
+          <p>Physical cash counted by counter staff vs computer records (prevents cash leakage)</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <h3>Daily Cash Settlement & Audit History</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="tallies-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>System Cash Sales</th>
+                <th>UPI Sales</th>
+                <th>Total Sales</th>
+                <th>Actual Cash Counted</th>
+                <th>Discrepancy (Difference)</th>
+                <th>Audit Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Tallies loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 6: EXPENSES ==================== -->
+    <div class="tab-pane" id="tab-expenses">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Daily Operating Expenses</h2>
+          <p>Electricity, shop rent, staff wages, machine oiling/maintenance, and consumables</p>
+        </div>
+        <button class="btn btn-danger" id="btn-trigger-expense-modal">➕ Record Expense</button>
+      </div>
+
+      <div class="card">
+        <div class="table-responsive">
+          <table class="data-table" id="expenses-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Amount (₹)</th>
+                <th>Description / Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Expenses loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 7: BILLS & RECENT SALES ==================== -->
+    <div class="tab-pane" id="tab-bills">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Recent Sales Invoices</h2>
+          <p>Real-time invoices recorded from the Staff Mobile POS counter</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-responsive">
+          <table class="data-table" id="bills-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Date & Time</th>
+                <th>Payment Mode</th>
+                <th>Cash (₹)</th>
+                <th>UPI (₹)</th>
+                <th>Total Amount</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Bills loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 8: CUSTOMER KHATA & CREDIT LEDGER ==================== -->
+    <div class="tab-pane" id="tab-khata">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Customer Khata & Credit Ledger</h2>
+          <p>Track customer credit balances, record debt repayments, and send WhatsApp payment reminders</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="khata-search-input" class="form-control" placeholder="🔍 Search customer or phone..." style="width: 240px;">
+          <button class="btn btn-primary" id="btn-open-new-customer-modal">➕ Add New Customer</button>
+        </div>
+      </div>
+
+      <!-- Khata Summary Cards -->
+      <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
+        <div class="metric-card" style="border-top-color: var(--danger);">
+          <div class="metric-header">
+            <span class="metric-title">Total Market Credit Due</span>
+            <span class="metric-icon">⚠️</span>
+          </div>
+          <div class="metric-value" id="khata-total-due" style="color: var(--danger);">₹0</div>
+          <div class="metric-sub">Total outstanding to collect from customers</div>
+        </div>
+
+        <div class="metric-card" style="border-top-color: var(--primary);">
+          <div class="metric-header">
+            <span class="metric-title">Accounts with Pending Due</span>
+            <span class="metric-icon">👥</span>
+          </div>
+          <div class="metric-value" id="khata-due-count" style="color: var(--primary);">0</div>
+          <div class="metric-sub">Customers having unpaid balance</div>
+        </div>
+
+        <div class="metric-card" style="border-top-color: var(--brand-gold);">
+          <div class="metric-header">
+            <span class="metric-title">Total Registered Customers</span>
+            <span class="metric-icon">📒</span>
+          </div>
+          <div class="metric-value" id="khata-total-customers" style="color: var(--brand-gold);">0</div>
+          <div class="metric-sub">Active Khata accounts in mill records</div>
+        </div>
+      </div>
+
+      <!-- Customers Table -->
+      <div class="card">
+        <div class="section-header">
+          <h3>Customer Khata Accounts</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="customers-khata-table">
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th>Phone Number</th>
+                <th>Address / Area</th>
+                <th>Outstanding Due (₹)</th>
+                <th>Credit Limit (₹)</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 9: USERS & STAFF MANAGEMENT ==================== -->
+    <div class="tab-pane" id="tab-users">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Staff & User Credentials Management</h2>
+          <p>Manage system logins, roles, cashier credentials, and shop access (స్టాఫ్ ఖాతాలు & పాస్‌వర్డ్‌ల నిర్వహణ)</p>
+        </div>
+        <button class="btn btn-primary" id="btn-open-user-modal">➕ Add New Staff / User</button>
+      </div>
+
+      <!-- Quick Tips Card -->
+      <div style="background: rgba(243, 182, 56, 0.08); border: 1px solid rgba(243, 182, 56, 0.25); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <div style="font-weight: 700; color: var(--brand-gold-bright); font-size: 0.95rem;">💡 Login Roles & Security</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+            <strong>👑 ADMIN (Owner)</strong>: Full access to Live P&L, stock inward costs, day-end audit, and user control.<br>
+            <strong>👤 STAFF (Cashier)</strong>: Optimized for Counter POS sales billing, customer lookup, and print receipts.
+          </div>
+        </div>
+        <a href="/pos/" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none;">📱 Launch Staff POS</a>
+      </div>
+
+      <div class="card">
+        <div class="table-responsive">
+          <table class="data-table" id="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Full Name / Telugu</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 10: ONLINE ORDERS ==================== -->
+    <div class="tab-pane" id="tab-online-orders">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Customer Online Orders & Home Delivery</h2>
+          <p>Real-time online orders, status workflow, customer address & WhatsApp updates (కస్టమర్ ఆన్‌లైన్ ఆర్డర్లు & డెలివరీ నిర్వహణ)</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button class="btn btn-secondary btn-sm" id="btn-refresh-online-orders">🔄 Refresh Orders</button>
+          <a href="/pos/?mode=customer" target="_blank" class="btn btn-primary btn-sm" style="text-decoration: none;">🛍️ View Customer Store</a>
+        </div>
+      </div>
+
+      <!-- Online Order Stats Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Total Online Orders</span>
+            <span class="metric-icon">📦</span>
+          </div>
+          <div class="metric-value" id="stat-online-total-orders">0</div>
+          <div class="metric-sub">All incoming customer orders</div>
+        </div>
+
+        <div class="metric-card" style="border-top-color: #F59E0B;">
+          <div class="metric-header">
+            <span class="metric-title">New / Pending Orders</span>
+            <span class="metric-icon">⏳</span>
+          </div>
+          <div class="metric-value" id="stat-online-new-orders" style="color: #F59E0B;">0</div>
+          <div class="metric-sub">Requires acceptance & packing</div>
+        </div>
+
+        <div class="metric-card" style="border-top-color: #8B5CF6;">
+          <div class="metric-header">
+            <span class="metric-title">In Packing / Delivery</span>
+            <span class="metric-icon">🚚</span>
+          </div>
+          <div class="metric-value" id="stat-online-transit-orders" style="color: #8B5CF6;">0</div>
+          <div class="metric-sub">Packing or Out for delivery</div>
+        </div>
+
+        <div class="metric-card profit">
+          <div class="metric-header">
+            <span class="metric-title">Online Order Revenue</span>
+            <span class="metric-icon">💰</span>
+          </div>
+          <div class="metric-value" id="stat-online-revenue">₹0</div>
+          <div class="metric-sub">Total sales from online orders</div>
+        </div>
+      </div>
+
+      <!-- Filter Chips -->
+      <div style="margin-bottom: 1.25rem; display: flex; gap: 0.5rem; flex-wrap: wrap;" id="online-orders-filter-bar">
+        <button class="btn btn-sm btn-primary online-filter-btn active" data-status="ALL">🌟 All Orders</button>
+        <button class="btn btn-sm btn-secondary online-filter-btn" data-status="NEW">🟡 New (<span id="filter-cnt-new">0</span>)</button>
+        <button class="btn btn-sm btn-secondary online-filter-btn" data-status="ACCEPTED">🔵 Accepted (<span id="filter-cnt-accepted">0</span>)</button>
+        <button class="btn btn-sm btn-secondary online-filter-btn" data-status="PACKING">🟠 Packing (<span id="filter-cnt-packing">0</span>)</button>
+        <button class="btn btn-sm btn-secondary online-filter-btn" data-status="OUT_FOR_DELIVERY">🚚 Out For Delivery (<span id="filter-cnt-out">0</span>)</button>
+        <button class="btn btn-sm btn-secondary online-filter-btn" data-status="DELIVERED">🟢 Delivered (<span id="filter-cnt-delivered">0</span>)</button>
+        <button class="btn btn-sm btn-secondary online-filter-btn" data-status="CANCELLED">❌ Cancelled</button>
+      </div>
+
+      <!-- Orders Table -->
+      <div class="card">
+        <div class="table-responsive">
+          <table class="data-table" id="online-orders-table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Date & Time</th>
+                <th>Customer Name & Phone</th>
+                <th>Delivery Type & Address</th>
+                <th>Ordered Items</th>
+                <th>Total & Payment</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="online-orders-table-body">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading online orders...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: New Oil Batch Entry -->
+  <!-- Modal 1: New Oil Batch Entry -->
+  <div class="modal-overlay" id="modal-batch">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>🛢️ Record Oil Crushing Batch</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-batch">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Seed Variety:</label>
+            <select class="form-control" id="batch-seed-name" required>
+              <option value="Groundnut">Groundnut (Peanut)</option>
+              <option value="Sesame">Sesame (Gingelly / Til)</option>
+              <option value="Mustard">Mustard</option>
+              <option value="Coconut">Coconut / Copra</option>
+              <option value="Sunflower">Sunflower</option>
+              <option value="Safflower">Safflower</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Input Seeds (Kg):</label>
+              <input type="number" step="0.5" class="form-control" id="batch-seed-kg" placeholder="e.g. 20" required>
+            </div>
+            <div class="form-group">
+              <label>Seed Purchase Cost (₹ / Kg):</label>
+              <input type="number" step="0.5" class="form-control" id="batch-seed-cost" placeholder="e.g. 85" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Inward Freight / Transport (₹):</label>
+              <input type="number" step="1" class="form-control" id="batch-transport-cost" placeholder="e.g. 30" value="30">
+            </div>
+            <div class="form-group">
+              <label>Extracted Oil (Litres):</label>
+              <input type="number" step="0.1" class="form-control" id="batch-oil-litres" placeholder="e.g. 8.5" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Oil Cake Output (Kg):</label>
+              <input type="number" step="0.1" class="form-control" id="batch-cake-kg" placeholder="e.g. 11" required>
+            </div>
+            <div class="form-group">
+              <label>Processing Cost (Power + Labor ₹):</label>
+              <input type="number" class="form-control" id="batch-proc-cost" value="153">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Machine Start Time:</label>
+              <input type="time" class="form-control" id="batch-start-time" value="09:00">
+            </div>
+            <div class="form-group">
+              <label>Machine Stop Time:</label>
+              <input type="time" class="form-control" id="batch-end-time" value="10:45">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes / Drum / Machine / Lot #:</label>
+            <input type="text" class="form-control" id="batch-notes" placeholder="e.g. Wood Press 5HP, Lot #2026-A">
+          </div>
+          <div id="batch-preview" style="background: var(--surface-alt); padding: 0.75rem; border-radius: 8px; font-size: 0.82rem; color: var(--primary);">
+            Extraction yield %, Net bulk cost per litre, and 1L/500ml/5L bottle economics will be calculated automatically upon save.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Batch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Bottling Log Entry -->
+  <div class="modal-overlay" id="modal-bottling">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🧴 Record Bottling & Packaging</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-bottling">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Select Target Bottle Product:</label>
+            <select class="form-control" id="bottling-item-id" required>
+              <!-- Filled via JS -->
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Number of Bottles Packed:</label>
+              <input type="number" class="form-control" id="bottling-count" placeholder="e.g. 25" required>
+            </div>
+            <div class="form-group">
+              <label>Bulk Oil Consumed (Litres):</label>
+              <input type="number" step="0.5" class="form-control" id="bottling-litres" placeholder="e.g. 25" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Empty Bottle & Cap Cost (₹ each):</label>
+              <input type="number" step="0.5" class="form-control" id="bottling-cap-cost" value="9">
+            </div>
+            <div class="form-group">
+              <label>Label Sticker Cost (₹ each):</label>
+              <input type="number" step="0.5" class="form-control" id="bottling-label-cost" value="1.5">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add to Inventory</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Expense Entry -->
+  <div class="modal-overlay" id="modal-expense">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>💸 Record Operating Expense</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-expense">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Expense Category:</label>
+            <select class="form-control" id="expense-category" required>
+              <option value="ELECTRICITY">Electricity & Power</option>
+              <option value="RENT">Shop & Mill Rent</option>
+              <option value="LABOR">Staff Salary & Wages</option>
+              <option value="MAINTENANCE">Machine Repairs & Oil Maintenance</option>
+              <option value="TEA_SNACKS">Tea & Refreshments</option>
+              <option value="PACKAGING">Packaging Pouches & Tapes</option>
+              <option value="OTHER">Other Miscellaneous</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount (₹):</label>
+            <input type="number" step="1" class="form-control" id="expense-amount" placeholder="e.g. 450" required>
+          </div>
+          <div class="form-group">
+            <label>Description / Notes:</label>
+            <input type="text" class="form-control" id="expense-notes" placeholder="e.g. Expeller belt replacement...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-danger">Record Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Adjust Item Stock -->
+  <div class="modal-overlay" id="modal-stock">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📦 Adjust Inventory Stock</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-stock">
+        <input type="hidden" id="stock-item-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Product Name:</label>
+            <input type="text" class="form-control" id="stock-item-name" readonly>
+          </div>
+          <div class="form-group">
+            <label>Stock Quantity:</label>
+            <input type="number" step="0.5" class="form-control" id="stock-item-qty" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>MRP / Selling Price (₹):</label>
+              <input type="number" step="0.5" class="form-control" id="stock-item-price" required>
+            </div>
+            <div class="form-group">
+              <label>Cost Price (₹):</label>
+              <input type="number" step="0.5" class="form-control" id="stock-item-cost" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Update Product Photo -->
+  <div class="modal-overlay" id="modal-item-photo">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📷 Update Product Photo</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-item-photo">
+        <input type="hidden" id="photo-item-id">
+        <div class="modal-body">
+          <div class="form-group" style="text-align: center;">
+            <img id="photo-preview" src="logo.png" alt="Product Preview" style="width: 140px; height: 140px; object-fit: cover; border-radius: 14px; border: 2px solid var(--brand-gold); margin: 0 auto 0.75rem; display: block; background: #fff; box-shadow: var(--shadow-sm);">
+            <div id="photo-item-name" style="font-weight: 700; color: var(--text-main); font-size: 1rem;"></div>
+          </div>
+          <div class="form-group">
+            <label>Upload Image from Device (Phone / PC):</label>
+            <input type="file" id="photo-file-input" class="form-control" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Or Paste Image URL:</label>
+            <input type="text" id="photo-url-input" class="form-control" placeholder="e.g. /uploads/groundnut_oil.jpg or https://...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Photo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 6: Create New Retail Product -->
+  <div class="modal-overlay" id="modal-new-product">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3>✨ Add New Retail Product</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-new-product">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Product Name (English):</label>
+              <input type="text" class="form-control" id="new-prod-name" placeholder="e.g. Cold Pressed Coconut Oil" required>
+            </div>
+            <div class="form-group">
+              <label>Regional Name (Optional):</label>
+              <input type="text" class="form-control" id="new-prod-name-te" placeholder="e.g. Kobbari Noone">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category:</label>
+              <select class="form-control" id="new-prod-category" required>
+                <option value="OIL">OIL (Cold-Pressed Oils)</option>
+                <option value="REPACK">REPACK (Dry Groceries & Pulses)</option>
+                <option value="SNACK">SNACK (Traditional Snacks)</option>
+                <option value="CAKE">CAKE (Oil Cake Byproduct)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Unit:</label>
+              <select class="form-control" id="new-prod-unit" required>
+                <option value="Ltr">Litre (Ltr)</option>
+                <option value="Kg">Kilogram (Kg)</option>
+                <option value="Pkt">Packet (Pkt)</option>
+                <option value="Bottle">Bottle</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Selling Price / MRP (₹):</label>
+              <input type="number" step="1" class="form-control" id="new-prod-selling" placeholder="e.g. 320" required>
+            </div>
+            <div class="form-group">
+              <label>Purchase / Cost Price (₹):</label>
+              <input type="number" step="1" class="form-control" id="new-prod-cost" placeholder="e.g. 240" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Initial In-Stock Quantity:</label>
+              <input type="number" step="0.5" class="form-control" id="new-prod-stock" placeholder="e.g. 25" value="20" required>
+            </div>
+            <div class="form-group">
+              <label>Low Stock Alert Threshold:</label>
+              <input type="number" step="1" class="form-control" id="new-prod-threshold" value="10">
+            </div>
+          </div>
+          <div class="form-group" style="text-align: center; margin-top: 0.5rem; padding: 0.75rem; background: rgba(22,70,16,0.05); border-radius: 10px; border: 1px dashed var(--border);">
+            <label style="font-weight: 700; color: var(--primary);">Product Photo (Image):</label>
+            <img id="new-prod-preview" src="logo.png" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid var(--brand-gold); margin: 0.5rem auto; display: block; background: #fff;">
+            <input type="file" id="new-prod-file-input" class="form-control" accept="image/*" style="margin-top: 0.5rem;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Or paste image URL:</div>
+            <input type="text" id="new-prod-url-input" class="form-control" placeholder="e.g. /uploads/sesame_oil.jpg" style="margin-top: 0.25rem;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">➕ Create Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 7: Receive Customer Khata Payment -->
+  <div class="modal-overlay" id="modal-receive-payment">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>💵 Receive Khata Payment</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-receive-payment">
+        <input type="hidden" id="pay-customer-id">
+        <div class="modal-body">
+          <div class="form-group" style="text-align: center; background: rgba(22,70,16,0.06); padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border);">
+            <div id="pay-customer-name" style="font-size: 1.15rem; font-weight: 800; color: var(--primary);"></div>
+            <div id="pay-customer-phone" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;"></div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Current Outstanding Due:</div>
+            <div id="pay-customer-due" style="font-size: 1.8rem; font-weight: 900; color: var(--danger); font-family: 'Outfit';">₹0</div>
+          </div>
+          <div class="form-group">
+            <label>Amount Received (₹):</label>
+            <input type="number" step="1" class="form-control" id="pay-amount-input" placeholder="e.g. 500" required style="font-size: 1.2rem; font-weight: 700;">
+          </div>
+          <div class="form-group">
+            <label>Payment Mode:</label>
+            <select class="form-control" id="pay-mode-select" required>
+              <option value="CASH">💵 Cash</option>
+              <option value="UPI">📱 PhonePe / GPay / UPI</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Notes / Remarks (Optional):</label>
+            <input type="text" class="form-control" id="pay-notes-input" placeholder="e.g. Paid in full at mill counter...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">✅ Record Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 8: Customer Ledger Statement -->
+  <div class="modal-overlay" id="modal-customer-ledger">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3>📜 Customer Khata Statement</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--surface-alt); padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1rem;">
+          <div>
+            <h4 id="ledger-customer-name" style="margin: 0; color: var(--primary);">Customer Name</h4>
+            <div id="ledger-customer-info" style="font-size: 0.82rem; color: var(--text-muted);">Phone & Address</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Current Due:</div>
+            <strong id="ledger-customer-balance" style="font-size: 1.4rem; color: var(--danger);">₹0</strong>
+          </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+          <table class="data-table" id="ledger-transactions-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Mode</th>
+                <th>Balance After</th>
+                <th>Notes / Bill</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filled via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button type="button" class="btn btn-secondary modal-cancel">Close</button>
+        <button type="button" class="btn btn-primary" id="btn-ledger-whatsapp">📲 Send WhatsApp Reminder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 9: Create New Khata Customer -->
+  <div class="modal-overlay" id="modal-new-customer">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3>➕ Add Khata Customer Account</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-new-customer">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Customer Name (English):</label>
+              <input type="text" class="form-control" id="new-cust-name" placeholder="e.g. K. Srinivasa Rao" required>
+            </div>
+            <div class="form-group">
+              <label>Regional Name (Optional):</label>
+              <input type="text" class="form-control" id="new-cust-name-te" placeholder="e.g. K. Srinivasa Rao">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Mobile Number (WhatsApp):</label>
+            <input type="tel" class="form-control" id="new-cust-phone" placeholder="e.g. 9848012345" required>
+          </div>
+          <div class="form-group">
+            <label>Address / Street / Landmark:</label>
+            <input type="text" class="form-control" id="new-cust-address" placeholder="e.g. Main Road, Shop #4">
+          </div>
+          <div class="form-group">
+            <label>Credit Limit (₹):</label>
+            <input type="number" step="500" class="form-control" id="new-cust-limit" value="5000">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 10: Add / Edit Milling Service -->
+  <div class="modal-overlay" id="modal-milling-service">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 id="modal-milling-title">➕ Add New Milling Service</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-milling-service">
+        <input type="hidden" id="milling-edit-id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Service Name (English):</label>
+              <input type="text" class="form-control" id="milling-name" placeholder="e.g. Wheat / Rice Flour Milling" required>
+            </div>
+            <div class="form-group">
+              <label>Regional Name (Optional):</label>
+              <input type="text" class="form-control" id="milling-name-te" placeholder="e.g. Wheat / Rice Flour">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Service Type:</label>
+              <select class="form-control" id="milling-type" required>
+                <option value="FLOUR">🌾 Flour Mill</option>
+                <option value="OIL_CRUSH">🛢️ Oil Expeller</option>
+                <option value="SPICE">🌶️ Spices & Masala</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Labor Rate (₹ / Kg):</label>
+              <input type="number" step="0.5" class="form-control" id="milling-rate" placeholder="e.g. 10" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Billing Unit:</label>
+            <input type="text" class="form-control" id="milling-unit" value="kg" readonly>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-milling-service">Save Service</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 11: Comprehensive Bottle Costing & Unit Economics Breakdown -->
+  <div class="modal-overlay" id="modal-batch-cost-breakdown">
+    <div class="modal-content" style="max-width: 860px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="background: linear-gradient(135deg, rgba(18, 57, 12, 0.95), rgba(14, 31, 18, 0.95)); border-bottom: 1px solid var(--border);">
+        <div>
+          <h3 id="cost-modal-title" style="display: flex; align-items: center; gap: 0.5rem; color: var(--brand-gold-bright); font-size: 1.25rem;">
+            <span>🔍 Cost of Production Breakdown (Bottle Unit Economics)</span>
+          </h3>
+          <p id="cost-modal-subtitle" style="font-size: 0.85rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
+            Batch #1 • Groundnut Oil • 2026-10-06
+          </p>
+        </div>
+        <button class="modal-close">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem;">
+        <!-- STEP 1 & 2: Direct Costs Card -->
+        <div style="background: var(--surface-alt); border-radius: var(--radius-md); padding: 1rem; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+            <strong style="color: var(--brand-gold-bright); font-size: 0.95rem;">
+              Step 1 & 2: Raw Material, Transport & Machine Run Costs
+            </strong>
+            <span class="badge badge-oil" id="cost-detail-seed-badge">Groundnut</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; font-size: 0.88rem;">
+            <div style="background: rgba(0,0,0,0.2); padding: 0.65rem 0.85rem; border-radius: 8px;">
+              <div style="color: var(--text-muted); font-size: 0.78rem;">🥜 Raw Seeds Cost:</div>
+              <div style="font-weight: 700; color: var(--text-main); margin-top: 0.2rem;" id="cost-detail-seeds">50 kg × ₹85 = ₹4,250.00</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.2); padding: 0.65rem 0.85rem; border-radius: 8px;">
+              <div style="color: var(--text-muted); font-size: 0.78rem;">🚚 Inward Freight / Transport:</div>
+              <div style="font-weight: 700; color: var(--text-main); margin-top: 0.2rem;" id="cost-detail-transport">₹75.00 (₹1.50/kg)</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.2); padding: 0.65rem 0.85rem; border-radius: 8px;">
+              <div style="color: var(--text-muted); font-size: 0.78rem;">⚡ 5HP Machine Power Consumption:</div>
+              <div style="font-weight: 700; color: #38BDF8; margin-top: 0.2rem;" id="cost-detail-power">6.4 Units = ₹64.00</div>
+              <div style="font-size: 0.72rem; color: var(--text-dim);" id="cost-detail-power-sub">3.73 kW @ 103 mins @ ₹10/unit</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.2); padding: 0.65rem 0.85rem; border-radius: 8px;">
+              <div style="color: var(--text-muted); font-size: 0.78rem;">👷 Machine Operator Labor Wage:</div>
+              <div style="font-weight: 700; color: #FBBF24; margin-top: 0.2rem;" id="cost-detail-labor">₹85.83</div>
+              <div style="font-size: 0.72rem; color: var(--text-dim);" id="cost-detail-labor-sub">Daily ₹400 / 8 hrs proportional</div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.6rem; border-top: 1px dashed rgba(255,255,255,0.1); font-size: 0.95rem;">
+            <span>Gross Crushing Expense:</span>
+            <strong style="color: var(--warning); font-size: 1.05rem;" id="cost-detail-gross-cost">₹4,475.00</strong>
+          </div>
+        </div>
+
+        <!-- STEP 3 & 4: Byproduct Deduction & Net Bulk Oil Cost -->
+        <div style="background: var(--surface-alt); border-radius: var(--radius-md); padding: 1rem; border: 1px solid rgba(52, 211, 153, 0.25);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+            <strong style="color: #34D399; font-size: 0.95rem;">
+              Step 3 & 4: Oil Cake Byproduct Deduction & Net Bulk Cost / Litre
+            </strong>
+            <span class="badge badge-success">Byproduct Deducted</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; font-size: 0.88rem;">
+            <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2); padding: 0.65rem 0.85rem; border-radius: 8px;">
+              <div style="color: #34D399; font-size: 0.78rem;">🟢 Less: Cake Recovery (@ ₹35/kg):</div>
+              <div style="font-weight: 700; color: #34D399; margin-top: 0.2rem;" id="cost-detail-cake">
+                27 kg × ₹35.00 = -₹945.00
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-dim);">Deducted from gross crushing expense</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.2); padding: 0.65rem 0.85rem; border-radius: 8px;">
+              <div style="color: var(--text-muted); font-size: 0.78rem;">🪔 Settling & Sludge Deduction (4% Deepam Oil):</div>
+              <div style="font-weight: 700; color: var(--text-main); margin-top: 0.2rem;" id="cost-detail-sludge">
+                20.99 L - 0.84 L (4%) = 20.15 L Pure Oil
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-dim);">Pure oil recovered after sedimentation</div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(211, 151, 21, 0.15), rgba(0,0,0,0.2)); border: 1px solid var(--border); padding: 0.65rem 0.85rem; border-radius: 8px;">
+              <div style="color: var(--brand-gold-bright); font-size: 0.78rem;">🛢️ Net Bulk Cost / Litre:</div>
+              <div style="font-weight: 800; color: var(--brand-gold-bright); font-size: 1.15rem; margin-top: 0.2rem;" id="cost-detail-bulk-per-ltr">
+                ₹171.46 / Ltr
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);" id="cost-detail-bulk-math">
+                (₹3,455.00 Net ÷ 20.15 Pure Litres)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Finished Bottle Unit Economics Table -->
+        <div style="background: var(--surface-alt); border-radius: var(--radius-md); padding: 1.1rem; border: 1px solid rgba(211, 151, 21, 0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+            <strong style="color: var(--brand-gold-bright); font-size: 1rem;">
+              Step 5: Finished Pack Unit Economics (Bottle + Stickers + Sealing)
+            </strong>
+            <span style="font-size: 0.78rem; color: var(--text-dim);">Bottle + Sticker Labels + Sealing Labor</span>
+          </div>
+
+          <!-- Comparison Table of 1L, 500ml, 5L -->
+          <div class="table-responsive">
+            <table class="data-table" style="font-size: 0.85rem; width: 100%;">
+              <thead>
+                <tr style="background: rgba(0,0,0,0.3);">
+                  <th>Pack Size</th>
+                  <th>Oil Cost</th>
+                  <th>Bottle & Cap</th>
+                  <th>Stickers</th>
+                  <th>Packing Labor</th>
+                  <th>Total Cost (COGS)</th>
+                  <th>Selling MRP</th>
+                  <th>Net Profit</th>
+                  <th>Margin %</th>
+                </tr>
+              </thead>
+              <tbody id="cost-modal-pack-rows">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Practical Notes Alert -->
+        <div style="background: rgba(56, 189, 248, 0.08); border-left: 3px solid var(--info); padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 0.5rem;">
+          <span style="font-size: 1.1rem;">💡</span>
+          <div>
+            <strong style="color: var(--info);">Owner Economics Note:</strong>
+            This breakdown shows true unit production costs to set retail prices profitably. Bottom sediment / lamp oil can be sold separately at ₹130/Ltr for additional profit!
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" onclick="window.printCostSheet()">🖨️ Print Cost Sheet</button>
+          <button type="button" class="btn btn-warning" id="btn-sync-current-batch" onclick="window.syncCurrentBatchToInventory()" style="background: rgba(211, 151, 21, 0.2); border: 1px solid var(--brand-gold); color: var(--brand-gold-bright);">
+            🔄 Sync Cost to Inventory
+          </button>
+        </div>
+        <button type="button" class="btn btn-primary modal-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 12: Add / Edit Raw Material or Packaging Item -->
+  <div class="modal-overlay" id="modal-new-material">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 id="modal-material-title">➕ Add Raw Material or Packaging Item</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-new-material">
+        <input type="hidden" id="material-edit-id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Material Name (English):</label>
+              <input type="text" class="form-control" id="material-name" placeholder="e.g. 1L PET Bottles with Cap" required>
+            </div>
+            <div class="form-group">
+              <label>Regional Name (Optional):</label>
+              <input type="text" class="form-control" id="material-name-te" placeholder="e.g. 1L Bottles & Caps">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category:</label>
+              <select class="form-control" id="material-type" required>
+                <option value="SEEDS">🥜 Oil Seeds</option>
+                <option value="PACKAGING">📦 Packaging (Bottles, Cans, Caps, Labels)</option>
+                <option value="BULK_FOOD">🌾 Grains & Pulses</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Unit:</label>
+              <select class="form-control" id="material-unit" required>
+                <option value="piece">Piece (piece)</option>
+                <option value="kg">Kilogram (kg)</option>
+                <option value="roll">Roll / Bundle (roll)</option>
+                <option value="packet">Packet (packet)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Opening Stock Quantity:</label>
+              <input type="number" step="0.5" class="form-control" id="material-stock-qty" placeholder="e.g. 500" value="0" required>
+            </div>
+            <div class="form-group">
+              <label>Average Cost (₹ / Unit):</label>
+              <input type="number" step="0.5" class="form-control" id="material-cost-per-unit" placeholder="e.g. 9.0" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-material">Save Material</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 13: Inward Material Purchase -->
+  <div class="modal-overlay" id="modal-material-purchase">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3>📥 Record Material Purchase (Inward Stock)</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-material-purchase">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Select Item Purchased:</label>
+            <select class="form-control" id="purchase-mat-id" required>
+              <!-- Populated dynamically via JS -->
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Quantity Purchased:</label>
+              <input type="number" step="0.5" class="form-control" id="purchase-qty" placeholder="e.g. 500" required>
+            </div>
+            <div class="form-group">
+              <label>Purchase Rate (₹ / Unit):</label>
+              <input type="number" step="0.5" class="form-control" id="purchase-rate" placeholder="e.g. 9.0" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Inward Freight / Transport (₹):</label>
+              <input type="number" step="1" class="form-control" id="purchase-transport" placeholder="e.g. 50" value="0">
+            </div>
+            <div class="form-group">
+              <label>Vendor / Supplier Name:</label>
+              <input type="text" class="form-control" id="purchase-supplier" placeholder="e.g. Sri Balaji Containers / Local Market">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Invoice / Bill Number:</label>
+              <input type="text" class="form-control" id="purchase-bill-no" placeholder="e.g. INV-2026-904">
+            </div>
+            <div class="form-group">
+              <label>Purchase Date:</label>
+              <input type="date" class="form-control" id="purchase-date">
+            </div>
+          </div>
+
+          <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: 700;">
+              <span>Total Purchase Amount:</span>
+              <span style="color: var(--brand-gold-bright); font-size: 1.1rem;" id="purchase-total-preview">₹0.00</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem;">
+              Weighted average unit cost will automatically recalculate upon saving this stock inward.
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="purchase-log-expense" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <label for="purchase-log-expense" style="cursor: pointer; font-size: 0.85rem; color: var(--text-main); margin: 0;">
+              Auto-record this amount in Shop Operating Expenses
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">📥 Add to Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 14: Add/Edit User & Staff Member -->
+  <div class="modal-overlay" id="modal-user">
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 id="modal-user-title">👤 Add New Staff / User</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-user">
+        <input type="hidden" id="user-id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Username / లాగిన్ యూజర్ నేమ్:</label>
+              <input type="text" class="form-control" id="user-username" placeholder="e.g. suresh_pos" required>
+            </div>
+            <div class="form-group">
+              <label>Role / అనుమతి హోదా:</label>
+              <select class="form-control" id="user-role" required>
+                <option value="STAFF">👤 Staff / Cashier (బిల్లింగ్)</option>
+                <option value="ADMIN">👑 Admin / Owner (యజమాని)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name / పూర్తి పేరు (English):</label>
+              <input type="text" class="form-control" id="user-fullname" placeholder="e.g. Suresh Kumar" required>
+            </div>
+            <div class="form-group">
+              <label>Regional Name / తెలుగు పేరు:</label>
+              <input type="text" class="form-control" id="user-name-te" placeholder="ఉదా: సురేష్ కుమార్">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone Number / ఫోన్ నంబర్:</label>
+              <input type="tel" class="form-control" id="user-phone" placeholder="e.g. 9848012345">
+            </div>
+            <div class="form-group">
+              <label id="label-user-password">Password / పాస్‌వర్డ్:</label>
+              <input type="password" class="form-control" id="user-password" placeholder="Enter password (min 4 chars)">
+              <small style="color: var(--text-dim); font-size: 0.72rem;" id="password-hint"></small>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="user-is-active" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <label for="user-is-active" style="cursor: pointer; font-size: 0.85rem; color: var(--text-main); margin: 0;">
+              Account Active (ఈ యూజర్ ఖాతా యాక్టివ్‌గా ఉంచండి)
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-user">💾 Save User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
