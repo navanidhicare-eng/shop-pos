@@ -1816,10 +1816,6 @@ app.patch('/api/orders/online/:id/status', async (req, res) => {
   }
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'healthy', shop: 'Sri Lakshmi Oil & Flour Mill ERP' });
-});
 
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
