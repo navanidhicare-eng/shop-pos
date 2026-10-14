@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./database');
+const { dbAll, dbGet, dbRun, isPostgres } = require('./database');
 
 const path = require('path');
 const app = express();
@@ -12,33 +12,6 @@ app.use(express.static(path.join(__dirname, '../admin_web')));
 app.use('/uploads', express.static(path.join(__dirname, '../admin_web/uploads')));
 app.use('/pos', express.static(path.join(__dirname, '../staff_mobile/build/web')));
 
-// Helper for database queries with promises
-function dbAll(query, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(query, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
-}
-
-function dbGet(query, params = []) {
-  return new Promise((resolve, reject) => {
-    db.get(query, params, (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
-}
-
-function dbRun(query, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(query, params, function (err) {
-      if (err) reject(err);
-      else resolve({ lastID: this.lastID, changes: this.changes });
-    });
-  });
-}
 
 // ==================== 0. AUTHENTICATION & USERS ====================
 app.post('/api/auth/login', async (req, res) => {
@@ -848,7 +821,7 @@ app.get('/api/production/pending-tins', async (req, res) => {
         oil_output_litres, 
         COALESCE(settled_oil_litres_remaining, oil_output_litres) AS settled_oil_litres_remaining,
         status, 
-        COALESCE(tin_label, 'టిన్ / డ్రమ్ #' || id) AS tin_label,
+        COALESCE(tin_label, 'టిన్ / డ్రమ్ #' || CAST(id AS TEXT)) AS tin_label,
         CAST(ROUND(JULIANDAY('now') - JULIANDAY(batch_date)) AS INTEGER) AS days_settled,
         created_at
       FROM oil_batches 

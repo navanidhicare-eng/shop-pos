@@ -1,0 +1,29 @@
+# Node
+node_modules/
+backend/node_modules/
+npm-debug.log*
+
+# Database
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+
+# Environment Variables
+.env
+!.env.example
+
+# Flutter & Mobile builds
+staff_mobile/.dart_tool/
+staff_mobile/.flutter-plugins
+staff_mobile/.flutter-plugins-dependencies
+staff_mobile/.packages
+staff_mobile/.pub-cache/
+staff_mobile/.pub/
+staff_mobile/build/!(web)
+
+# Editor & OS files
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db

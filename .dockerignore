@@ -1,0 +1,32 @@
+# Git & documentation
+.git
+.gitignore
+.idea
+*.md
+
+# Node modules (will be installed inside container)
+node_modules
+backend/node_modules
+
+# SQLite database local files
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+
+# Mobile & Flutter source not needed for web server runtime
+staff_mobile/.dart_tool
+staff_mobile/.idea
+staff_mobile/android
+staff_mobile/windows
+staff_mobile/test
+staff_mobile/lib
+staff_mobile/pubspec.*
+
+# Keep only staff_mobile/build/web, ignore everything else in build
+staff_mobile/build/app
+staff_mobile/build/unit_test_assets
+staff_mobile/build/flutter_assets
+
+# OS temporary files
+Thumbs.db
+.DS_Store

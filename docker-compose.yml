@@ -1,0 +1,74 @@
+services:
+  # ==========================================
+  # 1. PostgreSQL Database Service
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: shop_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-shop_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-shop_secure_password_123}
+      TZ: Asia/Kolkata
+    ports:
+      # Expose PostgreSQL port (accessible to pgAdmin / DBeaver / Host machine)
+      - "${DB_PORT_HOST:-5432}:5432"
+    volumes:
+      # Persistent storage volume for PostgreSQL data files
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-shop_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - shop_network
+
+  # ==========================================
+  # 2. Shop Web Application & API Service
+  # Serves:
+  #   - Admin Web (http://<server-ip>:5000)
+  #   - Staff POS Web (http://<server-ip>:5000/pos)
+  #   - REST Backend API (/api/*)
+  # ==========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shop_app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DB_TYPE: postgres
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-shop_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-shop_secure_password_123}
+      TZ: Asia/Kolkata
+    ports:
+      - "${APP_PORT:-5000}:5000"
+    volumes:
+      # Persistent directory for uploaded product photos & seed images
+      - ./admin_web/uploads:/app/admin_web/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    extra_hosts:
+      # Allows connecting to a PostgreSQL server running directly on the host OS
+      - "host.docker.internal:host-gateway"
+    networks:
+      - shop_network
+
+volumes:
+  postgres_data:
+    name: shop_postgres_data
+    driver: local
+
+networks:
+  shop_network:
+    name: shop_network
+    driver: bridge
