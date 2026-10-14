@@ -19,9 +19,10 @@
 </head>
 <body>
 
-  <!-- Fullscreen Login Portal Modal -->
-  <div id="auth-modal" class="auth-modal-overlay">
+  <!-- Fullscreen Login Portal Modal (Hidden by default for customers, opened via button) -->
+  <div id="auth-modal" class="auth-modal-overlay hidden">
     <div class="auth-card">
+      <button class="modal-close" id="btn-close-auth" style="position: absolute; top: 1rem; right: 1.25rem; font-size: 1.5rem; background: none; border: none; color: #fff; cursor: pointer;">&times;</button>
       <div class="auth-header">
         <div class="auth-logo-wrap">
           <img src="logo.png" alt="UNIK NATURALS" class="auth-logo">
@@ -97,26 +98,52 @@
         </div>
         <div class="brand-info">
           <h1>UNIK NATURALS</h1>
-          <span>Cold-Pressed Oils & Mill ERP • Owner Dashboard</span>
+          <span id="app-subtitle">గానుగ నూనెలు & సేంద్రీయ దినుసులు • Cold-Pressed Oils & Mill Store</span>
         </div>
       </div>
 
-      <nav class="nav-tabs" id="nav-tabs">
+      <!-- ERP Management Nav Tabs (Shown when logged in or ERP view active) -->
+      <nav class="nav-tabs" id="nav-tabs" style="display: none;">
         <button class="nav-tab-btn active" data-tab="tab-overview" id="nav-btn-overview">📊 Dashboard & P&L</button>
-        <button class="nav-tab-btn" data-tab="tab-production" id="nav-btn-production">🛢️ Oil Production</button>
-        <button class="nav-tab-btn" data-tab="tab-inventory" id="nav-btn-inventory">📦 Inventory & Stock</button>
-        <button class="nav-tab-btn" data-tab="tab-milling" id="nav-btn-milling">🌾 Milling Services</button>
+        <button class="nav-tab-btn" data-tab="tab-production" id="nav-btn-production">🛢️ Production</button>
+        <button class="nav-tab-btn" data-tab="tab-inventory" id="nav-btn-inventory">📦 Inventory</button>
+        <button class="nav-tab-btn" data-tab="tab-milling" id="nav-btn-milling">🌾 Milling</button>
         <button class="nav-tab-btn" data-tab="tab-cash-audit" id="nav-btn-cash-audit">💰 Cash Audit</button>
         <button class="nav-tab-btn" data-tab="tab-expenses" id="nav-btn-expenses">💸 Expenses</button>
-        <button class="nav-tab-btn" data-tab="tab-bills" id="nav-btn-bills">🧾 Sales Bills</button>
-        <button class="nav-tab-btn" data-tab="tab-khata" id="nav-btn-khata">📒 Customer Khata</button>
-        <button class="nav-tab-btn" data-tab="tab-online-orders" id="nav-btn-online-orders">🌐 Online Orders (ఆన్‌లైన్)</button>
-        <button class="nav-tab-btn" data-tab="tab-users" id="nav-btn-users">👥 Staff & Users</button>
+        <button class="nav-tab-btn" data-tab="tab-bills" id="nav-btn-bills">🧾 Bills</button>
+        <button class="nav-tab-btn" data-tab="tab-khata" id="nav-btn-khata">📒 Khata</button>
+        <button class="nav-tab-btn" data-tab="tab-online-orders" id="nav-btn-online-orders">🌐 Online Orders</button>
+        <button class="nav-tab-btn" data-tab="tab-users" id="nav-btn-users">👥 Staff</button>
+      </nav>
+
+      <!-- Storefront Links (Shown in Storefront Mode) -->
+      <nav class="nav-tabs" id="storefront-nav-links">
+        <a href="#storefront-hero" class="nav-tab-btn active">🌿 Home</a>
+        <a href="#storefront-catalog" class="nav-tab-btn">🛍️ Products (నూనెలు & పప్పులు)</a>
+        <a href="#storefront-milling" class="nav-tab-btn">🌾 Milling Rates</a>
+        <a href="#storefront-contact" class="nav-tab-btn">📍 Contact</a>
       </nav>
 
       <div class="header-actions">
+        <!-- Live Database Health Test Button -->
+        <button class="btn btn-sm" id="btn-db-status" title="Check PostgreSQL Connection & Health" style="background: rgba(34, 197, 94, 0.15); border: 1.5px solid #22c55e; color: #4ade80; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+          <span class="pulse-dot"></span>
+          <span id="db-status-label">🟢 DB: PostgreSQL</span>
+        </button>
+
+        <!-- Cart Button -->
+        <button class="btn btn-sm" id="btn-cart-toggle" title="View Shopping Cart" style="background: var(--brand-gold-gradient); color: #0E1F12; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+          <span>🛒 Cart</span>
+          <span id="cart-counter" style="background: #0E1F12; color: var(--brand-gold-bright); font-size: 0.72rem; padding: 2px 7px; border-radius: 999px;">0</span>
+        </button>
+
+        <!-- Toggle View between Storefront and ERP -->
+        <button class="btn btn-secondary btn-sm" id="btn-toggle-view" style="font-weight: 700;">
+          <span id="toggle-view-text">👑 Owner ERP</span>
+        </button>
+
         <!-- Logged-in User Profile Badge -->
-        <div class="user-profile-badge" id="user-profile-badge">
+        <div class="user-profile-badge" id="user-profile-badge" style="display: none;">
           <div class="user-avatar" id="header-user-avatar">👑</div>
           <div class="user-details">
             <span class="user-name" id="header-user-name">Admin</span>
@@ -124,25 +151,142 @@
           </div>
         </div>
 
-        <!-- Prominent Logout Button -->
-        <button class="btn btn-logout-prominent" id="btn-header-logout" title="ఖాతా నుండి లాగౌట్ అవ్వండి / Logout Account">
-          <span>🚪</span>
-          <span style="font-weight: 700;">లాగౌట్ / Logout</span>
+        <!-- Prominent Login / Logout Button -->
+        <button class="btn btn-logout-prominent" id="btn-header-logout" title="Login or Logout">
+          <span>🔑</span>
+          <span id="btn-auth-label" style="font-weight: 700;">లాగిన్ / Login</span>
         </button>
 
-        <div class="live-badge">
-          <span class="pulse-dot"></span>
-          <span>Live</span>
-        </div>
-        <a href="/pos/?mode=customer" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none;" title="Open Customer Online Store">🛍️ Storefront</a>
-        <a href="/pos/" target="_blank" class="btn btn-primary btn-sm" style="text-decoration: none;" title="Open Staff Mobile Billing App">📱 Staff POS</a>
-        <button class="btn btn-secondary btn-sm" id="btn-refresh" title="Refresh Live Data">🔄</button>
+        <a href="/pos/" target="_blank" class="btn btn-primary btn-sm" style="text-decoration: none;" title="Open Counter POS Billing App">📱 Counter POS</a>
       </div>
     </div>
   </header>
 
+  <!-- ==================== PUBLIC CUSTOMER STOREFRONT SECTION ==================== -->
+  <section id="storefront-container">
+    <!-- Hero Section -->
+    <div class="storefront-hero" id="storefront-hero">
+      <div class="hero-pill">🌿 100% సహజమైన లక్క గానుగ నూనెలు & రాతి పిండి (Pure Wood-Pressed)</div>
+      <h1 class="hero-title">Naturally <span>Cold-Pressed Oils</span> & Stone-Ground Farm Essentials</h1>
+      <p class="hero-sub">
+        Zero chemicals, unrefined, and traditionally expelled at low temperatures to preserve natural antioxidants, flavor, and rich aroma. Order directly online or via WhatsApp for doorstep delivery!
+      </p>
+      <div class="hero-actions">
+        <a href="#storefront-catalog" class="btn btn-primary btn-lg" style="text-decoration: none; font-weight: 800; font-size: 1.05rem; padding: 0.8rem 1.6rem;">
+          🛍️ Explore Storefront (ఉత్పత్తులు చూడండి)
+        </a>
+        <a href="https://api.whatsapp.com/send?phone=919848012345&text=Hello%20UNIK%20NATURALS,%20I%20want%20to%20order%20pure%20cold-pressed%20oils!" target="_blank" class="btn btn-whatsapp-order btn-lg" style="text-decoration: none; font-size: 1.05rem; padding: 0.8rem 1.6rem;">
+          📲 Order on WhatsApp (వాట్సాప్ ఆర్డర్)
+        </a>
+      </div>
+
+      <!-- Trust Badges -->
+      <div class="hero-features">
+        <div class="feature-item">
+          <div class="feature-icon">🪵</div>
+          <div class="feature-text">
+            <strong>Wood Cold-Pressed</strong>
+            <span>సాంప్రదాయ గానుగ నూనెలు</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🚫</div>
+          <div class="feature-text">
+            <strong>0% Chemicals</strong>
+            <span>ఎలాంటి రసాయనాలు లేవు</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🌾</div>
+          <div class="feature-text">
+            <strong>Freshly Stone-Ground</strong>
+            <span>తాజా రాతి పిండి మిల్లు</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">
+            <strong>Fresh Daily Batches</strong>
+            <span>తాజా గానుగ బ్యాచులు</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Storefront Catalog Section -->
+    <div id="storefront-catalog">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>🌾 Pure Farm Products & Cold-Pressed Oils</h2>
+          <p>తాజా ఉత్పత్తులు • Freshly pressed oils, unpolished dals, and homemade snacks</p>
+        </div>
+        <div class="storefront-filters">
+          <button class="filter-chip active" data-cat="ALL">All Products (అన్నీ)</button>
+          <button class="filter-chip" data-cat="OIL">🛢️ Pure Oils (నూనెలు)</button>
+          <button class="filter-chip" data-cat="REPACK">🌾 Grains & Dals (పప్పులు)</button>
+          <button class="filter-chip" data-cat="SNACK">🥨 Traditional Snacks</button>
+          <button class="filter-chip" data-cat="CAKE">🌿 Oil Cake (పిండి చెక్క)</button>
+        </div>
+      </div>
+
+      <div class="storefront-grid" id="storefront-products-grid">
+        <!-- Dynamically rendered from /api/items -->
+        <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">
+          Loading fresh catalog items...
+        </div>
+      </div>
+    </div>
+
+    <!-- Storefront Milling Services Section -->
+    <div id="storefront-milling" style="margin-bottom: 3rem;">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>🌾 Custom Job-Work Milling Rates (పిండి మిల్లు చార్జీలు)</h2>
+          <p>Bring your own grains, spices, or seeds for high-grade stone milling & oil expelling</p>
+        </div>
+      </div>
+      <div class="card" style="padding: 1.5rem; border: 1px solid var(--border);">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Service Name (సేవ పేరు)</th>
+              <th>Service Category</th>
+              <th>Rate / Unit (ధర)</th>
+              <th>Processing Time</th>
+            </tr>
+          </thead>
+          <tbody id="storefront-milling-tbody">
+            <tr><td colspan="4" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Loading milling rates...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Contact & Store Location -->
+    <div id="storefront-contact" class="card" style="padding: 2rem; border: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(22, 70, 16, 0.25) 0%, rgba(14, 31, 18, 0.45) 100%);">
+      <div>
+        <h3 style="color: var(--brand-gold-bright); font-size: 1.3rem; margin-bottom: 0.5rem;">🏪 Visit Our Mill & Storefront</h3>
+        <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 0.5rem;">
+          <strong>UNIK NATURALS Oil Mill & Milling Center</strong><br>
+          📍 Main Bazaar, Shop #4, Bazaar Street, Telangana / AP<br>
+          🕒 Hours: Monday - Sunday: 7:00 AM - 9:00 PM
+        </p>
+        <div style="display: flex; gap: 1rem; align-items: center; font-weight: 700;">
+          <span>📞 Phone: <a href="tel:9848012345" style="color: #4ade80; text-decoration: none;">9848012345</a></span>
+          <span>💬 WhatsApp: <a href="https://api.whatsapp.com/send?phone=919848012345" target="_blank" style="color: #25D366; text-decoration: none;">9848012345</a></span>
+        </div>
+      </div>
+      <a href="https://api.whatsapp.com/send?phone=919848012345&text=Hello%20UNIK%20NATURALS,%20I%20have%20an%20inquiry%20about%20your%20products" target="_blank" class="btn btn-whatsapp-order" style="padding: 0.9rem 1.8rem; font-size: 1rem;">
+        💬 Chat on WhatsApp with Shop
+      </a>
+    </div>
+  </section>
+
+  <!-- ==================== ERP CONTAINER (Owner / Staff Management) ==================== -->
+  <div id="erp-container" style="display: none;">
   <!-- Main Content Body -->
   <main class="main-content">
+
 
     <!-- ==================== TAB 1: OVERVIEW & REAL P&L ==================== -->
     <div class="tab-pane active" id="tab-overview">
@@ -863,6 +1007,7 @@
     </div>
 
   </main>
+  </div> <!-- /#erp-container -->
 
   <!-- ==================== MODALS ==================== -->
 
@@ -1077,8 +1222,17 @@
             <div id="photo-item-name" style="font-weight: 700; color: var(--text-main); font-size: 1rem;"></div>
           </div>
           <div class="form-group">
-            <label>Upload Image from Device (Phone / PC):</label>
-            <input type="file" id="photo-file-input" class="form-control" accept="image/*">
+            <label>Upload or Capture Photo (కెమెరా లేదా ఫైల్):</label>
+            <div class="dropzone-area" id="photo-dropzone">
+              <span class="dropzone-icon">📸</span>
+              <div class="dropzone-text"><strong>Drag & Drop photo here</strong> or choose:</div>
+              <div class="dropzone-actions">
+                <label for="photo-file-input" class="btn btn-secondary btn-sm" style="cursor: pointer;">📁 Browse File</label>
+                <label for="photo-camera-input" class="btn btn-primary btn-sm" style="cursor: pointer;">📷 Open Camera</label>
+              </div>
+              <input type="file" id="photo-file-input" class="dropzone-hidden-input" accept="image/*">
+              <input type="file" id="photo-camera-input" class="dropzone-hidden-input" accept="image/*" capture="environment">
+            </div>
           </div>
           <div class="form-group">
             <label>Or Paste Image URL:</label>
@@ -1152,11 +1306,22 @@
               <input type="number" step="1" class="form-control" id="new-prod-threshold" value="10">
             </div>
           </div>
-          <div class="form-group" style="text-align: center; margin-top: 0.5rem; padding: 0.75rem; background: rgba(22,70,16,0.05); border-radius: 10px; border: 1px dashed var(--border);">
-            <label style="font-weight: 700; color: var(--primary);">Product Photo (Image):</label>
-            <img id="new-prod-preview" src="logo.png" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid var(--brand-gold); margin: 0.5rem auto; display: block; background: #fff;">
-            <input type="file" id="new-prod-file-input" class="form-control" accept="image/*" style="margin-top: 0.5rem;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Or paste image URL:</div>
+          <div class="form-group" style="text-align: center; margin-top: 0.5rem; padding: 0.75rem; background: rgba(22,70,16,0.12); border-radius: 12px; border: 1px dashed var(--brand-gold);">
+            <label style="font-weight: 700; color: var(--brand-gold-bright);">Product Photo & Camera Capture:</label>
+            <img id="new-prod-preview" src="logo.png" alt="Preview" style="width: 110px; height: 110px; object-fit: cover; border-radius: 12px; border: 2px solid var(--brand-gold); margin: 0.5rem auto; display: block; background: #fff;">
+            
+            <div class="dropzone-area" id="new-prod-dropzone" style="padding: 1rem 0.5rem;">
+              <span class="dropzone-icon" style="font-size: 1.6rem;">📷</span>
+              <div class="dropzone-text" style="margin-bottom: 0.5rem;"><strong>Drop photo</strong> or select:</div>
+              <div class="dropzone-actions">
+                <label for="new-prod-file-input" class="btn btn-secondary btn-sm" style="cursor: pointer;">📁 Browse File</label>
+                <label for="new-prod-camera-input" class="btn btn-primary btn-sm" style="cursor: pointer;">📸 Use Camera</label>
+              </div>
+              <input type="file" id="new-prod-file-input" class="dropzone-hidden-input" accept="image/*">
+              <input type="file" id="new-prod-camera-input" class="dropzone-hidden-input" accept="image/*" capture="environment">
+            </div>
+
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Or paste image URL:</div>
             <input type="text" id="new-prod-url-input" class="form-control" placeholder="e.g. /uploads/sesame_oil.jpg" style="margin-top: 0.25rem;">
           </div>
         </div>
@@ -1674,8 +1839,100 @@
     </div>
   </div>
 
+  <!-- ==================== LIVE DATABASE HEALTH & DIAGNOSTIC MODAL ==================== -->
+  <div class="modal-overlay" id="modal-db-health">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3>🔌 Database Connection & Diagnostic</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="db-status-banner" id="db-health-banner">
+          <span style="font-size: 1.5rem;">✅</span>
+          <div>
+            <div id="db-health-title">Testing database connectivity...</div>
+            <small id="db-health-sub" style="font-weight: normal; opacity: 0.85;">Sending query to PostgreSQL / SQLite engine</small>
+          </div>
+        </div>
+
+        <div class="db-health-grid">
+          <div class="db-stat-box">
+            <div class="val" id="db-stat-engine">PostgreSQL</div>
+            <div class="lbl">Database Engine</div>
+          </div>
+          <div class="db-stat-box">
+            <div class="val" id="db-stat-latency">-- ms</div>
+            <div class="lbl">Query Latency</div>
+          </div>
+          <div class="db-stat-box">
+            <div class="val" id="db-stat-items">0</div>
+            <div class="lbl">Catalog Products</div>
+          </div>
+          <div class="db-stat-box">
+            <div class="val" id="db-stat-sales">0</div>
+            <div class="lbl">Sales Invoices</div>
+          </div>
+          <div class="db-stat-box">
+            <div class="val" id="db-stat-cust">0</div>
+            <div class="lbl">Khata Customers</div>
+          </div>
+          <div class="db-stat-box">
+            <div class="val" id="db-stat-batches">0</div>
+            <div class="lbl">Production Batches</div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.5rem; background: var(--surface-alt); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <strong>ℹ️ Diagnostic Summary:</strong><br>
+          <span id="db-health-details">Connecting to backend /api/health endpoint...</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary modal-cancel">Close</button>
+        <button type="button" class="btn btn-primary" id="btn-retest-db">⚡ Run Live Test Query</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SLIDE-IN CUSTOMER SHOPPING CART DRAWER ==================== -->
+  <div class="cart-drawer-overlay" id="cart-drawer-overlay"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h3>🛒 Shopping Cart (<span id="drawer-cart-count">0</span> items)</h3>
+      <button class="modal-close" id="btn-close-cart" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+    <div class="cart-body" id="cart-drawer-items">
+      <div style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+        <span style="font-size: 3rem; display: block; margin-bottom: 0.5rem;">🛍️</span>
+        Your cart is currently empty.<br>Click "Add to Cart" on any product to start shopping!
+      </div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>మొత్తం (Total Amount):</span>
+        <span id="cart-drawer-total" style="color: var(--brand-gold-bright);">₹0</span>
+      </div>
+
+      <div style="margin-bottom: 0.85rem;">
+        <input type="text" id="order-customer-name" class="form-control" placeholder="మీ పేరు / Customer Name" style="margin-bottom: 0.4rem;" required>
+        <input type="tel" id="order-customer-phone" class="form-control" placeholder="వాట్సాప్ నెంబర్ / WhatsApp Phone" style="margin-bottom: 0.4rem;" required>
+        <input type="text" id="order-delivery-address" class="form-control" placeholder="డెలివరీ చిరునామా / Delivery Address">
+      </div>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" class="btn btn-whatsapp-order" id="btn-cart-whatsapp" style="flex: 1; padding: 0.75rem 0.5rem;">
+          📲 WhatsApp Order
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-cart-checkout" style="flex: 1; padding: 0.75rem 0.5rem; font-weight: 800;">
+          🛍️ Place Order (COD)
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
 
   <script src="app.js"></script>
 </body>
 </html>
+

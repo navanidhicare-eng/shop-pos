@@ -12,6 +12,33 @@ app.use(express.static(path.join(__dirname, '../admin_web')));
 app.use('/uploads', express.static(path.join(__dirname, '../admin_web/uploads')));
 app.use('/pos', express.static(path.join(__dirname, '../staff_mobile/build/web')));
 
+// ==================== HEALTH & DIAGNOSTIC ENDPOINT ====================
+app.get('/api/health', async (req, res) => {
+  try {
+    const userCount = await dbGet('SELECT COUNT(*) as c FROM users');
+    const itemCount = await dbGet('SELECT COUNT(*) as c FROM items');
+    const salesCount = await dbGet('SELECT COUNT(*) as c FROM sales');
+    const customerCount = await dbGet('SELECT COUNT(*) as c FROM customers');
+    const batchCount = await dbGet('SELECT COUNT(*) as c FROM oil_batches');
+
+    res.json({
+      status: 'healthy',
+      database: isPostgres ? 'PostgreSQL' : 'SQLite',
+      timestamp: new Date().toISOString(),
+      uptime_seconds: Math.floor(process.uptime()),
+      counts: {
+        users: Number(userCount?.c || 0),
+        items: Number(itemCount?.c || 0),
+        sales: Number(salesCount?.c || 0),
+        customers: Number(customerCount?.c || 0),
+        batches: Number(batchCount?.c || 0)
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'unhealthy', error: err.message, database: isPostgres ? 'PostgreSQL' : 'SQLite' });
+  }
+});
+
 
 // ==================== 0. AUTHENTICATION & USERS ====================
 app.post('/api/auth/login', async (req, res) => {
@@ -189,6 +216,23 @@ function saveBase64Image(imageData, prefix = 'item') {
   require('fs').writeFileSync(path.join(uploadsDir, filename), buffer);
   return `/uploads/${filename}`;
 }
+
+// Universal photo upload endpoint (base64 image data)
+app.post('/api/upload', (req, res) => {
+  try {
+    const { image_data, prefix } = req.body;
+    if (!image_data) {
+      return res.status(400).json({ error: 'No image data provided' });
+    }
+    const url = saveBase64Image(image_data, prefix || 'photo');
+    if (!url) {
+      return res.status(400).json({ error: 'Invalid image format. Expected data:image/...' });
+    }
+    res.json({ success: true, url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post('/api/items', async (req, res) => {
   try {
@@ -542,6 +586,29 @@ app.post('/api/sales', async (req, res) => {
       }
     }
 
+    // Generate Digital Receipt URL & Instant WhatsApp Share URL
+    const host = req.get('host') || 'localhost:5000';
+    const protocol = req.protocol || 'http';
+    const receiptUrl = `${protocol}://${host}/receipt/${bill_number}`;
+
+    let waText = `*UNIK NATURALS - సేల్స్ రసీదు / Invoice*\n`;
+    waText += `బిల్ నెం (Bill #): *${bill_number}*\n`;
+    waText += `మొత్తం (Total): *₹${total_amount}* (${payment_mode})\n`;
+    if (resolvedCustomerName) waText += `కస్టమర్ (Customer): ${resolvedCustomerName}\n`;
+    waText += `--------------------------------\n`;
+    items.slice(0, 5).forEach((it, idx) => {
+      waText += `${idx + 1}. ${it.name} x ${it.quantity} = ₹${it.total || it.quantity * it.rate}\n`;
+    });
+    if (items.length > 5) waText += `...మరియు మరిన్ని (${items.length - 5} items)\n`;
+    waText += `--------------------------------\n`;
+    waText += `📄 పూర్తి రసీదు చూడండి (View Digital Receipt):\n${receiptUrl}\n`;
+    waText += `ధన్యవాదాలు! మళ్లీ విచ్చేయండి (Thank You! Visit Again)`;
+
+    const cleanPhone = (customer_phone || '').replace(/[^0-9]/g, '');
+    const whatsappUrl = cleanPhone 
+      ? `https://api.whatsapp.com/send?phone=91${cleanPhone.length === 10 ? cleanPhone : cleanPhone.slice(-10)}&text=${encodeURIComponent(waText)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+
     res.json({
       success: true,
       sale_id: saleId,
@@ -552,10 +619,100 @@ app.post('/api/sales', async (req, res) => {
       credit_amount: finalCredit,
       customer_id: resolvedCustomerId,
       customer_name: resolvedCustomerName,
-      payment_mode
+      payment_mode,
+      receipt_url: receiptUrl,
+      whatsapp_url: whatsappUrl
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Digital Receipt & Invoice Viewer
+app.get('/api/sales/bill/:billNumber', async (req, res) => {
+  try {
+    const { billNumber } = req.params;
+    const sale = await dbGet('SELECT * FROM sales WHERE bill_number = ?', [billNumber]);
+    if (!sale) return res.status(404).json({ error: 'Invoice not found' });
+    const items = await dbAll('SELECT * FROM sale_items WHERE sale_id = ?', [sale.id]);
+    res.json({ sale, items });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/receipt/:billNumber', async (req, res) => {
+  try {
+    const { billNumber } = req.params;
+    const sale = await dbGet('SELECT * FROM sales WHERE bill_number = ?', [billNumber]);
+    if (!sale) {
+      return res.status(404).send('<h2>404 - రసీదు కనుగొనబడలేదు (Invoice Not Found)</h2>');
+    }
+    const items = await dbAll('SELECT * FROM sale_items WHERE sale_id = ?', [sale.id]);
+
+    const html = `<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>రసీదు / Receipt #${sale.bill_number} - UNIK NATURALS</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f3f4f6; margin: 0; padding: 20px; color: #111827; }
+    .receipt-box { max-width: 480px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 6px solid #164e10; }
+    .header { text-align: center; border-bottom: 2px dashed #e5e7eb; padding-bottom: 16px; margin-bottom: 16px; }
+    .logo-title { font-size: 22px; font-weight: 800; color: #164e10; letter-spacing: 0.5px; }
+    .sub { font-size: 13px; color: #4b5563; margin-top: 4px; }
+    .meta-row { display: flex; justify-content: space-between; font-size: 13px; color: #6b7280; margin-bottom: 6px; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+    th { text-align: left; padding: 8px 4px; border-bottom: 1.5px solid #111827; color: #374151; }
+    td { padding: 8px 4px; border-bottom: 1px solid #f3f4f6; }
+    .totals { border-top: 2px dashed #e5e7eb; padding-top: 12px; margin-top: 12px; }
+    .total-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+    .grand-total { font-size: 18px; font-weight: 800; color: #164e10; margin-top: 8px; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 12px; }
+    .actions { display: flex; gap: 10px; margin-top: 16px; }
+    .btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; font-size: 14px; }
+    .btn-print { background: #164e10; color: #fff; }
+    .btn-wa { background: #25D366; color: #fff; }
+    @media print { .actions, body { background: #fff; padding: 0; } .receipt-box { box-shadow: none; border-top: none; } }
+  </style>
+</head>
+<body>
+  <div class="receipt-box">
+    <div class="header">
+      <div class="logo-title">UNIK NATURALS</div>
+      <div class="sub">గానుగ నూనెలు & ఫ్లోర్ మిల్ • Cold-Pressed Oils & Organic Millets</div>
+      <div class="sub">Phone: 9848012345 | Main Bazaar</div>
+    </div>
+    <div class="meta-row"><span>బిల్ నెం (Bill #):</span><strong>${sale.bill_number}</strong></div>
+    <div class="meta-row"><span>తేదీ (Date):</span><span>${new Date(sale.sale_time).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</span></div>
+    ${sale.customer_name ? `<div class="meta-row"><span>కస్టమర్ (Customer):</span><span>${sale.customer_name}</span></div>` : ''}
+    <div class="meta-row"><span>చెల్లింపు (Payment):</span><strong>${sale.payment_mode}</strong></div>
+    <table>
+      <thead><tr><th>వస్తువు (Item)</th><th>పరిమాణం (Qty)</th><th>ధర (Rate)</th><th style="text-align:right;">మొత్తం (Total)</th></tr></thead>
+      <tbody>
+        ${items.map(it => `<tr><td>${it.name}</td><td>${it.quantity}</td><td>₹${it.rate}</td><td style="text-align:right;">₹${it.total}</td></tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="totals">
+      <div class="total-row"><span>ఉప మొత్తం (Subtotal):</span><span>₹${sale.subtotal}</span></div>
+      ${sale.discount > 0 ? `<div class="total-row"><span>డిస్కౌంట్ (Discount):</span><span>- ₹${sale.discount}</span></div>` : ''}
+      <div class="total-row grand-total"><span>మొత్తం చెల్లించాల్సింది (Total Paid):</span><span>₹${sale.total_amount}</span></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-print" onclick="window.print()">🖨️ ప్రింట్ / Save PDF</button>
+      <a class="btn btn-wa" href="https://api.whatsapp.com/send?text=${encodeURIComponent('UNIK NATURALS Bill #' + sale.bill_number + ' for ₹' + sale.total_amount)}" target="_blank">📱 WhatsApp</a>
+    </div>
+    <div class="footer">
+      <div>ధన్యవాదాలు! మళ్లీ విచ్చేయండి (Thank you! Visit again)</div>
+      <div>100% సహజమైన & స్వచ్ఛమైన ఉత్పత్తులు (100% Pure & Natural)</div>
+    </div>
+  </div>
+</body>
+</html>`;
+    res.send(html);
+  } catch (err) {
+    res.status(500).send(`Error generating invoice: ${err.message}`);
   }
 });
 

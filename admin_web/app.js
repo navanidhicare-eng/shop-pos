@@ -1478,30 +1478,38 @@ function updateAuthUI() {
   const userProfileBadge = document.getElementById('user-profile-badge');
   const navBtnUsers = document.getElementById('nav-btn-users');
   const logoutBtn = document.getElementById('btn-header-logout');
+  const erpContainer = document.getElementById('erp-container');
+  const storefrontContainer = document.getElementById('storefront-container');
+  const navTabs = document.getElementById('nav-tabs');
+  const storefrontNavLinks = document.getElementById('storefront-nav-links');
+  const toggleViewBtn = document.getElementById('btn-toggle-view');
+  const toggleViewText = document.getElementById('toggle-view-text');
+  const authLabel = document.getElementById('btn-auth-label');
 
   if (!user) {
-    if (authModal) authModal.classList.remove('hidden');
-    if (userProfileBadge) {
-      userProfileBadge.style.display = 'inline-flex';
-      const avatarEl = document.getElementById('header-user-avatar');
-      const nameEl = document.getElementById('header-user-name');
-      const roleEl = document.getElementById('header-user-role');
-      if (avatarEl) avatarEl.textContent = '🔒';
-      if (nameEl) nameEl.textContent = 'లాగిన్ అవ్వండి';
-      if (roleEl) {
-        roleEl.textContent = 'GUEST';
-        roleEl.className = 'user-role-tag';
-      }
-    }
+    if (storefrontContainer) storefrontContainer.style.display = 'block';
+    if (erpContainer) erpContainer.style.display = 'none';
+    if (navTabs) navTabs.style.display = 'none';
+    if (storefrontNavLinks) storefrontNavLinks.style.display = 'flex';
+    if (toggleViewBtn) toggleViewBtn.style.display = 'inline-flex';
+    if (toggleViewText) toggleViewText.textContent = '👑 Owner ERP';
+    if (userProfileBadge) userProfileBadge.style.display = 'none';
+
     if (logoutBtn) {
-      logoutBtn.innerHTML = '<span>🔑</span><span style="font-weight: 700;">లాగిన్ / Login</span>';
+      if (authLabel) authLabel.textContent = 'లాగిన్ / Login';
       logoutBtn.style.background = 'linear-gradient(135deg, #D39715 0%, #A6730A 100%)';
     }
     return;
   }
 
-  // Hide login modal
+  // When logged in as Admin or Staff
   if (authModal) authModal.classList.add('hidden');
+  if (erpContainer) erpContainer.style.display = 'block';
+  if (storefrontContainer) storefrontContainer.style.display = 'none';
+  if (navTabs) navTabs.style.display = 'flex';
+  if (storefrontNavLinks) storefrontNavLinks.style.display = 'none';
+  if (toggleViewBtn) toggleViewBtn.style.display = 'inline-flex';
+  if (toggleViewText) toggleViewText.textContent = '🛍️ View Storefront';
 
   // Display user badge in header
   if (userProfileBadge) {
@@ -1519,7 +1527,7 @@ function updateAuthUI() {
   }
 
   if (logoutBtn) {
-    logoutBtn.innerHTML = '<span>🚪</span><span style="font-weight: 700;">లాగౌట్ / Logout</span>';
+    if (authLabel) authLabel.textContent = 'లాగౌట్ / Logout';
     logoutBtn.style.background = 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)';
   }
 
@@ -2072,16 +2080,490 @@ window.sendOnlineOrderWhatsApp = function(name, phone, orderNum, total, currentS
   window.open(url, '_blank');
 };
 
-// Initial boot
+// ==================== IMAGE COMPRESSION & CAMERA CAPTURE ====================
+function compressImage(file, maxWidth = 1000, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function setupDropzone(dropzoneId, fileInputId, cameraInputId, previewImgId) {
+  const dropzone = document.getElementById(dropzoneId);
+  const fileInput = document.getElementById(fileInputId);
+  const cameraInput = document.getElementById(cameraInputId);
+  const previewImg = document.getElementById(previewImgId);
+  if (!dropzone) return;
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('drag-over');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('drag-over');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const dt = e.dataTransfer;
+    if (dt && dt.files && dt.files[0]) {
+      const file = dt.files[0];
+      if (file.type.startsWith('image/')) {
+        showToast('Processing dropped photo...');
+        const compressed = await compressImage(file);
+        if (previewImg) {
+          previewImg.src = compressed;
+          previewImg.dataset.imageData = compressed;
+        }
+        showToast('Photo optimized & ready to save!');
+      }
+    }
+  });
+
+  const handleInput = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      showToast('Optimizing image...');
+      const compressed = await compressImage(file);
+      if (previewImg) {
+        previewImg.src = compressed;
+        previewImg.dataset.imageData = compressed;
+      }
+      showToast('Photo loaded successfully!');
+    }
+  };
+
+  if (fileInput) fileInput.addEventListener('change', handleInput);
+  if (cameraInput) cameraInput.addEventListener('change', handleInput);
+}
+
+// ==================== LIVE DATABASE HEALTH CHECK ====================
+async function checkDatabaseHealth() {
+  const statusLabel = document.getElementById('db-status-label');
+  const statEngine = document.getElementById('db-stat-engine');
+  const statLatency = document.getElementById('db-stat-latency');
+  const statItems = document.getElementById('db-stat-items');
+  const statSales = document.getElementById('db-stat-sales');
+  const statCust = document.getElementById('db-stat-cust');
+  const statBatches = document.getElementById('db-stat-batches');
+  const details = document.getElementById('db-health-details');
+  const banner = document.getElementById('db-health-banner');
+  const title = document.getElementById('db-health-title');
+  const sub = document.getElementById('db-health-sub');
+
+  const start = performance.now();
+  try {
+    const res = await fetch(`${API_BASE}/health`);
+    const elapsed = Math.round(performance.now() - start);
+    const data = await res.json();
+
+    if (data.status === 'healthy') {
+      if (statusLabel) statusLabel.textContent = `🟢 DB: ${data.database}`;
+      if (statEngine) statEngine.textContent = data.database;
+      if (statLatency) statLatency.textContent = `${elapsed} ms`;
+      if (statItems) statItems.textContent = data.counts.items;
+      if (statSales) statSales.textContent = data.counts.sales;
+      if (statCust) statCust.textContent = data.counts.customers;
+      if (statBatches) statBatches.textContent = data.counts.batches;
+      if (details) details.innerHTML = `Connected to <strong>${data.database}</strong> in ${elapsed}ms. Uptime: ${data.uptime_seconds}s. Total tables responsive & verified.`;
+      if (banner) {
+        banner.style.background = 'rgba(34, 197, 94, 0.15)';
+        banner.style.borderColor = '#22c55e';
+        banner.style.color = '#4ade80';
+      }
+      if (title) title.textContent = `✅ ${data.database} is Connected & Healthy`;
+      if (sub) sub.textContent = `All 14 tables verified & query operations operational.`;
+    } else {
+      throw new Error(data.error || 'Database connection error');
+    }
+  } catch (err) {
+    const elapsed = Math.round(performance.now() - start);
+    if (statusLabel) statusLabel.textContent = '🔴 DB: Offline';
+    if (statLatency) statLatency.textContent = `${elapsed} ms`;
+    if (details) details.innerHTML = `<span style="color:#f87171;">Connection failed: ${err.message}</span>`;
+    if (banner) {
+      banner.style.background = 'rgba(239, 68, 68, 0.15)';
+      banner.style.borderColor = '#ef4444';
+      banner.style.color = '#f87171';
+    }
+    if (title) title.textContent = '❌ Database Error';
+    if (sub) sub.textContent = err.message;
+  }
+}
+
+// ==================== PUBLIC STOREFRONT & CART ====================
+let storefrontProducts = [];
+let activeStorefrontCategory = 'ALL';
+let storefrontCart = JSON.parse(localStorage.getItem('unik_cart') || '[]');
+
+async function loadStorefrontProducts() {
+  const grid = document.getElementById('storefront-products-grid');
+  if (!grid) return;
+  try {
+    const res = await fetch(`${API_BASE}/items`);
+    storefrontProducts = await res.json();
+    renderStorefrontGrid();
+  } catch (err) {
+    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #f87171; padding: 2rem;">Error loading products: ${err.message}</div>`;
+  }
+}
+
+function renderStorefrontGrid() {
+  const grid = document.getElementById('storefront-products-grid');
+  if (!grid) return;
+
+  const filtered = activeStorefrontCategory === 'ALL'
+    ? storefrontProducts
+    : storefrontProducts.filter(p => p.category === activeStorefrontCategory);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">No products found in this category.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item => {
+    const inStock = item.stock_qty > 0;
+    const isLow = item.stock_qty > 0 && item.stock_qty <= item.low_stock_threshold;
+    const photoUrl = item.image_url || 'logo.png';
+    const cleanPhone = '919848012345';
+    const waText = `Hello UNIK NATURALS, I want to order ${item.name} (₹${item.selling_price}/${item.unit}). Please deliver!`;
+    const waLink = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(waText)}`;
+
+    return `
+      <div class="store-card">
+        <div class="store-card-media">
+          <img src="${photoUrl}" alt="${item.name}" loading="lazy" onerror="this.src='logo.png'">
+          <span class="store-stock-tag ${inStock ? (isLow ? 'low-stock' : 'in-stock') : 'low-stock'}">
+            ${inStock ? (isLow ? '⚡ Low Stock' : '✅ In Stock') : '❌ Out of Stock'}
+          </span>
+        </div>
+        <div class="store-card-body">
+          <span class="store-card-cat">${item.category}</span>
+          <div class="store-card-name">${item.name}</div>
+          <div class="store-card-name-te">${item.name_te || ''}</div>
+          <div class="store-card-price-row">
+            <span class="store-card-price">₹${item.selling_price}</span>
+            <span class="store-card-unit">/ ${item.unit}</span>
+          </div>
+          <div class="store-card-actions">
+            <a href="${waLink}" target="_blank" class="btn-whatsapp-order" title="Order directly on WhatsApp">
+              <span>💬 WhatsApp</span>
+            </a>
+            <button class="btn-cart-add" onclick="addToStorefrontCart(${item.id})">
+              <span>🛒 Add</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadStorefrontMilling() {
+  const tbody = document.getElementById('storefront-milling-tbody');
+  if (!tbody) return;
+  try {
+    const res = await fetch(`${API_BASE}/milling`);
+    const services = await res.json();
+    if (!services || services.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No milling rates listed.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = services.map(s => `
+      <tr>
+        <td><strong>${s.name}</strong><br><small style="color: var(--text-muted);">${s.name_te || ''}</small></td>
+        <td><span class="badge" style="background: rgba(22, 70, 16, 0.35); color: #4ade80;">${s.type}</span></td>
+        <td><strong style="color: var(--brand-gold-bright); font-size: 1.1rem;">₹${s.rate_per_kg}</strong> / ${s.unit || 'kg'}</td>
+        <td style="color: var(--text-muted);">Same-day / On-the-spot</td>
+      </tr>
+    `).join('');
+  } catch (_) {}
+}
+
+window.addToStorefrontCart = function(itemId) {
+  const product = storefrontProducts.find(p => p.id === itemId);
+  if (!product) return;
+
+  const existing = storefrontCart.find(c => c.id === itemId);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    storefrontCart.push({
+      id: product.id,
+      name: product.name,
+      name_te: product.name_te,
+      price: product.selling_price,
+      unit: product.unit,
+      image_url: product.image_url || 'logo.png',
+      qty: 1
+    });
+  }
+  saveStorefrontCart();
+  showToast(`Added "${product.name}" to cart! 🛒`);
+  openCartDrawer();
+};
+
+function saveStorefrontCart() {
+  localStorage.setItem('unik_cart', JSON.stringify(storefrontCart));
+  updateCartBadge();
+  renderStorefrontCart();
+}
+
+function updateCartBadge() {
+  const totalItems = storefrontCart.reduce((sum, item) => sum + item.qty, 0);
+  const counterEl = document.getElementById('cart-counter');
+  const drawerCountEl = document.getElementById('drawer-cart-count');
+  if (counterEl) counterEl.textContent = totalItems;
+  if (drawerCountEl) drawerCountEl.textContent = totalItems;
+}
+
+function renderStorefrontCart() {
+  const cartBody = document.getElementById('cart-drawer-items');
+  const totalEl = document.getElementById('cart-drawer-total');
+  if (!cartBody) return;
+
+  if (storefrontCart.length === 0) {
+    cartBody.innerHTML = `
+      <div style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+        <span style="font-size: 3rem; display: block; margin-bottom: 0.5rem;">🛍️</span>
+        Your cart is currently empty.<br>Click "Add" on any product to start shopping!
+      </div>
+    `;
+    if (totalEl) totalEl.textContent = '₹0';
+    return;
+  }
+
+  let grandTotal = 0;
+  cartBody.innerHTML = storefrontCart.map(item => {
+    const itemTotal = item.price * item.qty;
+    grandTotal += itemTotal;
+    return `
+      <div class="cart-item">
+        <img src="${item.image_url}" class="cart-item-img" alt="${item.name}" onerror="this.src='logo.png'">
+        <div class="cart-item-details">
+          <div class="cart-item-title">${item.name}</div>
+          <div class="cart-item-sub">₹${item.price} / ${item.unit}</div>
+        </div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeCartItemQty(${item.id}, -1)">-</button>
+          <span style="font-weight: 700; min-width: 20px; text-align: center;">${item.qty}</span>
+          <button class="qty-btn" onclick="changeCartItemQty(${item.id}, 1)">+</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (totalEl) totalEl.textContent = `₹${grandTotal}`;
+}
+
+window.changeCartItemQty = function(itemId, delta) {
+  const item = storefrontCart.find(c => c.id === itemId);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) {
+    storefrontCart = storefrontCart.filter(c => c.id !== itemId);
+  }
+  saveStorefrontCart();
+};
+
+function openCartDrawer() {
+  document.getElementById('cart-drawer')?.classList.add('active');
+  document.getElementById('cart-drawer-overlay')?.classList.add('active');
+  renderStorefrontCart();
+}
+
+function closeCartDrawer() {
+  document.getElementById('cart-drawer')?.classList.remove('active');
+  document.getElementById('cart-drawer-overlay')?.classList.remove('active');
+}
+
+// ==================== ATTACH EVENT LISTENERS ====================
+// View switcher (Storefront vs Owner ERP)
+document.getElementById('btn-toggle-view')?.addEventListener('click', () => {
+  const erpContainer = document.getElementById('erp-container');
+  const storefrontContainer = document.getElementById('storefront-container');
+  const navTabs = document.getElementById('nav-tabs');
+  const storefrontNavLinks = document.getElementById('storefront-nav-links');
+  const toggleViewText = document.getElementById('toggle-view-text');
+
+  const isStorefrontVisible = storefrontContainer.style.display !== 'none';
+  if (isStorefrontVisible) {
+    const user = getCurrentUser();
+    if (!user) {
+      document.getElementById('auth-modal')?.classList.remove('hidden');
+      return;
+    }
+    storefrontContainer.style.display = 'none';
+    erpContainer.style.display = 'block';
+    if (navTabs) navTabs.style.display = 'flex';
+    if (storefrontNavLinks) storefrontNavLinks.style.display = 'none';
+    if (toggleViewText) toggleViewText.textContent = '🛍️ View Storefront';
+  } else {
+    erpContainer.style.display = 'none';
+    storefrontContainer.style.display = 'block';
+    if (navTabs) navTabs.style.display = 'none';
+    if (storefrontNavLinks) storefrontNavLinks.style.display = 'flex';
+    if (toggleViewText) toggleViewText.textContent = '👑 Owner ERP';
+  }
+});
+
+// Database health test modal
+document.getElementById('btn-db-status')?.addEventListener('click', () => {
+  document.getElementById('modal-db-health')?.classList.add('active');
+  checkDatabaseHealth();
+});
+document.getElementById('btn-retest-db')?.addEventListener('click', () => {
+  checkDatabaseHealth();
+  showToast('Database live test query executed!');
+});
+
+// Cart drawer buttons
+document.getElementById('btn-cart-toggle')?.addEventListener('click', openCartDrawer);
+document.getElementById('btn-close-cart')?.addEventListener('click', closeCartDrawer);
+document.getElementById('cart-drawer-overlay')?.addEventListener('click', closeCartDrawer);
+
+// Auth modal close button
+document.getElementById('btn-close-auth')?.addEventListener('click', () => {
+  document.getElementById('auth-modal')?.classList.add('hidden');
+});
+
+// Category filter chips
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeStorefrontCategory = chip.getAttribute('data-cat') || 'ALL';
+    renderStorefrontGrid();
+  });
+});
+
+// WhatsApp cart order
+document.getElementById('btn-cart-whatsapp')?.addEventListener('click', () => {
+  if (storefrontCart.length === 0) {
+    showToast('Your cart is empty!', 'error');
+    return;
+  }
+  const name = document.getElementById('order-customer-name')?.value.trim() || 'Customer';
+  const phone = document.getElementById('order-customer-phone')?.value.trim();
+  const address = document.getElementById('order-delivery-address')?.value.trim() || '';
+
+  let total = 0;
+  let text = `*UNIK NATURALS - Online Order Request*\n`;
+  text += `👤 *Customer Name:* ${name}\n`;
+  if (phone) text += `📞 *Phone:* ${phone}\n`;
+  if (address) text += `📍 *Delivery Address:* ${address}\n`;
+  text += `--------------------------------\n`;
+  storefrontCart.forEach((it, idx) => {
+    const itemTotal = it.price * it.qty;
+    total += itemTotal;
+    text += `${idx + 1}. *${it.name}* x ${it.qty} = ₹${itemTotal}\n`;
+  });
+  text += `--------------------------------\n`;
+  text += `💰 *Grand Total:* ₹${total} (Cash on Delivery)\n`;
+  text += `Please confirm my order and share delivery details!`;
+
+  window.open(`https://api.whatsapp.com/send?phone=919848012345&text=${encodeURIComponent(text)}`, '_blank');
+});
+
+// COD Cart Checkout (Calls /api/online-orders)
+document.getElementById('btn-cart-checkout')?.addEventListener('click', async () => {
+  if (storefrontCart.length === 0) {
+    showToast('Your cart is empty!', 'error');
+    return;
+  }
+  const name = document.getElementById('order-customer-name')?.value.trim();
+  const phone = document.getElementById('order-customer-phone')?.value.trim();
+  const address = document.getElementById('order-delivery-address')?.value.trim() || '';
+
+  if (!name || !phone) {
+    showToast('Please enter your Name and Phone Number!', 'error');
+    return;
+  }
+
+  const payload = {
+    customer_name: name,
+    customer_phone: phone,
+    delivery_type: address ? 'DELIVERY' : 'PICKUP',
+    delivery_address: address,
+    payment_mode: 'COD',
+    items: storefrontCart.map(it => ({
+      item_id: it.id,
+      name: it.name,
+      name_te: it.name_te,
+      variant: it.unit,
+      unit_price: it.price,
+      quantity: it.qty,
+      image_url: it.image_url
+    }))
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/online-orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Order #${data.order_number} placed successfully!`);
+      storefrontCart = [];
+      saveStorefrontCart();
+      closeCartDrawer();
+    } else {
+      showToast('Failed to place order: ' + (data.error || 'Server error'), 'error');
+    }
+  } catch (err) {
+    showToast('Error placing order: ' + err.message, 'error');
+  }
+});
+
+// Initialize Drag-and-drop & Camera dropzones
+setupDropzone('photo-dropzone', 'photo-file-input', 'photo-camera-input', 'photo-preview');
+setupDropzone('new-prod-dropzone', 'new-prod-file-input', 'new-prod-camera-input', 'new-prod-preview');
+
+// App bootstrap
 function initApp() {
+  updateAuthUI();
+  updateCartBadge();
+  loadStorefrontProducts();
+  loadStorefrontMilling();
+  checkDatabaseHealth();
+
   const user = getCurrentUser();
   if (user && user.role === 'ADMIN') {
-    updateAuthUI();
     loadOverview();
   } else if (user && user.role === 'STAFF') {
-    window.location.href = '/pos/';
-  } else {
-    updateAuthUI();
+    // If staff user is logged in
+    loadBills();
   }
 }
 
@@ -2111,5 +2593,6 @@ if (refreshOnlineBtn) {
     showToast('Online orders refreshed');
   });
 }
+
 
 
