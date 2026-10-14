@@ -139,11 +139,39 @@ function dbRun(query, params = []) {
 }
 
 // ==================== SCHEMA INITIALIZATION ====================
-async function initDatabase() {
-  if (isPostgres) {
-    await initPostgresDatabase();
-  } else {
-    initSqliteDatabase();
+let isInitializing = false;
+let isInitialized = false;
+
+async function initDatabase(retries = 5, delayMs = 2000) {
+  if (isInitialized) return true;
+  if (isInitializing) {
+    while (isInitializing) {
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    return isInitialized;
+  }
+
+  isInitializing = true;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      if (isPostgres) {
+        await initPostgresDatabase();
+      } else {
+        initSqliteDatabase();
+      }
+      isInitialized = true;
+      isInitializing = false;
+      console.log('Database schema successfully initialized and verified.');
+      return true;
+    } catch (err) {
+      console.error(`Database initialization attempt ${attempt}/${retries} failed:`, err.message);
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, delayMs));
+      } else {
+        isInitializing = false;
+        throw err;
+      }
+    }
   }
 }
 

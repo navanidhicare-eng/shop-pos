@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { dbAll, dbGet, dbRun, isPostgres } = require('./database');
+const { dbAll, dbGet, dbRun, isPostgres, initDatabase } = require('./database');
 
 const path = require('path');
 const app = express();
@@ -12,27 +12,63 @@ app.use(express.static(path.join(__dirname, '../admin_web')));
 app.use('/uploads', express.static(path.join(__dirname, '../admin_web/uploads')));
 app.use('/pos', express.static(path.join(__dirname, '../staff_mobile/build/web')));
 
+// Helper to query table counts safely
+async function getTableCounts() {
+  const userCount = await dbGet('SELECT COUNT(*) as c FROM users');
+  const itemCount = await dbGet('SELECT COUNT(*) as c FROM items');
+  const salesCount = await dbGet('SELECT COUNT(*) as c FROM sales');
+  const customerCount = await dbGet('SELECT COUNT(*) as c FROM customers');
+  const batchCount = await dbGet('SELECT COUNT(*) as c FROM oil_batches');
+
+  return {
+    users: Number(userCount?.c || 0),
+    items: Number(itemCount?.c || 0),
+    sales: Number(salesCount?.c || 0),
+    customers: Number(customerCount?.c || 0),
+    batches: Number(batchCount?.c || 0)
+  };
+}
+
+// ==================== EXPLICIT SCHEMA INITIALIZATION ENDPOINT ====================
+app.all(['/api/init-db', '/api/admin/init-db'], async (req, res) => {
+  try {
+    console.log('Explicit database initialization requested via API...');
+    await initDatabase();
+    const counts = await getTableCounts();
+    res.json({
+      success: true,
+      message: 'Database schema successfully initialized and verified.',
+      database: isPostgres ? 'PostgreSQL' : 'SQLite',
+      counts
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ==================== HEALTH & DIAGNOSTIC ENDPOINT ====================
 app.get('/api/health', async (req, res) => {
   try {
-    const userCount = await dbGet('SELECT COUNT(*) as c FROM users');
-    const itemCount = await dbGet('SELECT COUNT(*) as c FROM items');
-    const salesCount = await dbGet('SELECT COUNT(*) as c FROM sales');
-    const customerCount = await dbGet('SELECT COUNT(*) as c FROM customers');
-    const batchCount = await dbGet('SELECT COUNT(*) as c FROM oil_batches');
+    let counts;
+    try {
+      counts = await getTableCounts();
+    } catch (queryErr) {
+      // If tables do not exist yet, trigger initialization automatically
+      if (queryErr.message && (queryErr.message.includes('does not exist') || queryErr.message.includes('no such table'))) {
+        console.log('Tables missing during health check. Auto-triggering initDatabase()...');
+        await initDatabase();
+        counts = await getTableCounts();
+      } else {
+        throw queryErr;
+      }
+    }
 
     res.json({
       status: 'healthy',
       database: isPostgres ? 'PostgreSQL' : 'SQLite',
       timestamp: new Date().toISOString(),
       uptime_seconds: Math.floor(process.uptime()),
-      counts: {
-        users: Number(userCount?.c || 0),
-        items: Number(itemCount?.c || 0),
-        sales: Number(salesCount?.c || 0),
-        customers: Number(customerCount?.c || 0),
-        batches: Number(batchCount?.c || 0)
-      }
+      counts
     });
   } catch (err) {
     res.status(500).json({ status: 'unhealthy', error: err.message, database: isPostgres ? 'PostgreSQL' : 'SQLite' });
@@ -1817,6 +1853,11 @@ app.patch('/api/orders/online/:id/status', async (req, res) => {
 });
 
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
+  try {
+    await initDatabase();
+  } catch (err) {
+    console.error('Initial database setup error:', err.message);
+  }
 });
