@@ -19,7 +19,8 @@ staff_mobile/.flutter-plugins-dependencies
 staff_mobile/.packages
 staff_mobile/.pub-cache/
 staff_mobile/.pub/
-staff_mobile/build/!(web)
+staff_mobile/build/*
+!staff_mobile/build/web/
 
 # Editor & OS files
 .vscode/
