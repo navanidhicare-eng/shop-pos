@@ -1,0 +1,10 @@
+{
+  "name": "shope-root",
+  "version": "1.0.0",
+  "description": "UNIK Naturals Shop POS & Oil Mill Management System",
+  "scripts": {
+    "dev": "npm run dev --prefix backend",
+    "start": "npm run start --prefix backend",
+    "migrate:sqlite-to-pg": "npm run migrate:sqlite-to-pg --prefix backend"
+  }
+}
