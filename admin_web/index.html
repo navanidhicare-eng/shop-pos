@@ -28,64 +28,31 @@
           <img src="logo.png" alt="UNIK NATURALS" class="auth-logo">
         </div>
         <h2>UNIK NATURALS</h2>
-        <p class="auth-sub">Cold-Pressed Oils & Mill ERP • Login Portal</p>
-        <span class="auth-sub-te">షాప్ యజమాని & స్టాఫ్ లాగిన్ పోర్టల్</span>
+        <p class="auth-sub">Admin & Staff Login</p>
       </div>
 
       <form id="auth-form" class="auth-form" autocomplete="off">
         <div id="auth-error" class="auth-error-alert" style="display: none;"></div>
 
         <div class="auth-input-group">
-          <label for="login-username">👤 Username / యూజర్ నేమ్</label>
+          <label for="login-username">👤 User ID</label>
           <div class="input-with-icon">
-            <input type="text" id="login-username" class="auth-input" placeholder="Enter username (admin or staff)" required autofocus>
+            <input type="text" id="login-username" class="auth-input" placeholder="User ID" required autofocus>
           </div>
         </div>
 
         <div class="auth-input-group">
-          <label for="login-password">🔒 Password / పాస్‌వర్డ్</label>
+          <label for="login-password">🔒 Password</label>
           <div class="input-with-icon">
-            <input type="password" id="login-password" class="auth-input" placeholder="Enter password" required>
+            <input type="password" id="login-password" class="auth-input" placeholder="Password" required>
             <button type="button" class="btn-toggle-pw" id="btn-toggle-pw" title="Show/Hide Password">👁️</button>
           </div>
         </div>
 
-        <div class="auth-options">
-          <label class="remember-label">
-            <input type="checkbox" id="login-remember" checked>
-            <span>Remember me (నన్ను గుర్తుంచుకో)</span>
-          </label>
-        </div>
-
-        <button type="submit" id="btn-login-submit" class="btn btn-primary auth-submit-btn">
-          🚀 లాగిన్ అవ్వండి / Login
+        <button type="submit" id="btn-login-submit" class="btn btn-primary auth-submit-btn" style="margin-top: 0.5rem;">
+          🚀 Login
         </button>
       </form>
-
-      <div class="auth-demo-section">
-        <div class="demo-title">⚡ Quick Autofill Demo / త్వరిత లాగిన్:</div>
-        <div class="demo-buttons">
-          <button type="button" class="btn-demo-fill admin-fill" id="btn-demo-admin">
-            <strong>👑 Admin (Owner)</strong>
-            <small>admin / admin123</small>
-          </button>
-          <button type="button" class="btn-demo-fill staff-fill" id="btn-demo-staff">
-            <strong>👤 Counter Staff</strong>
-            <small>staff / staff123</small>
-          </button>
-        </div>
-      </div>
-
-      <div class="auth-footer-pos" style="border-top: 1px solid rgba(211, 151, 21, 0.25); margin-top: 1.25rem; padding-top: 0.85rem; text-align: center; font-size: 0.85rem; color: #9CA3AF;">
-        <span style="display: block; color: var(--brand-gold-bright); font-weight: 700; margin-bottom: 4px;">🔐 సింగిల్ యూనిఫైడ్ లాగిన్ (Single Unified Login)</span>
-        <span>👑 Admin &rarr; ERP డ్యాష్‌బోర్డ్ &nbsp;|&nbsp; 👤 Staff &rarr; నేరుగా POS బిల్లింగ్</span>
-        <div style="margin-top: 0.85rem;">
-          <a href="/pos/?mode=customer" target="_blank" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; background: rgba(22, 70, 16, 0.45); border: 1.5px solid var(--brand-gold); color: #fff; border-radius: 10px; padding: 0.65rem 1rem; font-weight: 700; transition: all 0.2s;">
-            <span>🛍️</span>
-            <span>కస్టమర్ ఆన్‌లైన్ షాప్ (Customer Online Store) &rarr;</span>
-          </a>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -116,32 +83,7 @@
         <button class="nav-tab-btn" data-tab="tab-users" id="nav-btn-users">👥 Staff</button>
       </nav>
 
-      <!-- Storefront Links (Shown in Storefront Mode) -->
-      <nav class="nav-tabs" id="storefront-nav-links">
-        <a href="#storefront-hero" class="nav-tab-btn active">🌿 Home</a>
-        <a href="#storefront-catalog" class="nav-tab-btn">🛍️ Products (నూనెలు & పప్పులు)</a>
-        <a href="#storefront-milling" class="nav-tab-btn">🌾 Milling Rates</a>
-        <a href="#storefront-contact" class="nav-tab-btn">📍 Contact</a>
-      </nav>
-
       <div class="header-actions">
-        <!-- Live Database Health Test Button -->
-        <button class="btn btn-sm" id="btn-db-status" title="Check PostgreSQL Connection & Health" style="background: rgba(34, 197, 94, 0.15); border: 1.5px solid #22c55e; color: #4ade80; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
-          <span class="pulse-dot"></span>
-          <span id="db-status-label">🟢 DB: PostgreSQL</span>
-        </button>
-
-        <!-- Cart Button -->
-        <button class="btn btn-sm" id="btn-cart-toggle" title="View Shopping Cart" style="background: var(--brand-gold-gradient); color: #0E1F12; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
-          <span>🛒 Cart</span>
-          <span id="cart-counter" style="background: #0E1F12; color: var(--brand-gold-bright); font-size: 0.72rem; padding: 2px 7px; border-radius: 999px;">0</span>
-        </button>
-
-        <!-- Toggle View between Storefront and ERP -->
-        <button class="btn btn-secondary btn-sm" id="btn-toggle-view" style="font-weight: 700;">
-          <span id="toggle-view-text">👑 Owner ERP</span>
-        </button>
-
         <!-- Logged-in User Profile Badge -->
         <div class="user-profile-badge" id="user-profile-badge" style="display: none;">
           <div class="user-avatar" id="header-user-avatar">👑</div>
@@ -154,29 +96,29 @@
         <!-- Prominent Login / Logout Button -->
         <button class="btn btn-logout-prominent" id="btn-header-logout" title="Login or Logout">
           <span>🔑</span>
-          <span id="btn-auth-label" style="font-weight: 700;">లాగిన్ / Login</span>
+          <span id="btn-auth-label" style="font-weight: 700;">Login</span>
         </button>
-
-        <a href="/pos/" target="_blank" class="btn btn-primary btn-sm" style="text-decoration: none;" title="Open Counter POS Billing App">📱 Counter POS</a>
       </div>
     </div>
   </header>
 
   <!-- ==================== PUBLIC CUSTOMER STOREFRONT SECTION ==================== -->
   <section id="storefront-container">
-    <!-- Hero Section -->
+
+    <!-- 1. HERO SECTION -->
     <div class="storefront-hero" id="storefront-hero">
-      <div class="hero-pill">🌿 100% సహజమైన లక్క గానుగ నూనెలు & రాతి పిండి (Pure Wood-Pressed)</div>
-      <h1 class="hero-title">Naturally <span>Cold-Pressed Oils</span> & Stone-Ground Farm Essentials</h1>
-      <p class="hero-sub">
-        Zero chemicals, unrefined, and traditionally expelled at low temperatures to preserve natural antioxidants, flavor, and rich aroma. Order directly online or via WhatsApp for doorstep delivery!
+      <div class="hero-pill">🌿 100% సాంప్రదాయ లక్క గానుగ నూనెలు & రాతి తిరగలి పిండి మిల్లు</div>
+      <h1 class="hero-title">UNIK <span>NATURALS</span></h1>
+      <p class="hero-sub" style="font-size: 1.15rem; color: #e2e8f0; max-width: 850px; margin: 0 auto 1.5rem; line-height: 1.8;">
+        <strong>కల్తీ లేని స్వచ్ఛత • రసాయనాలు లేని పూర్వీకుల ఆరోగ్యం!</strong><br>
+        మేము రైతుల నుండి నేరుగా సేకరించిన మేలైన విత్తనాలను సాంప్రదాయ లక్క గానుగలో తక్కువ ఉష్ణోగ్రత వద్ద మాత్రమే ఆడించి, సహజసిద్ధమైన రుచి, సువాసన మరియు పోషక విలువలతో కూడిన స్వచ్ఛమైన నూనెలను మరియు రాతి తిరగలి పిండిని అందిస్తున్నాము.
       </p>
       <div class="hero-actions">
-        <a href="#storefront-catalog" class="btn btn-primary btn-lg" style="text-decoration: none; font-weight: 800; font-size: 1.05rem; padding: 0.8rem 1.6rem;">
-          🛍️ Explore Storefront (ఉత్పత్తులు చూడండి)
+        <a href="tel:9010737882" class="btn btn-primary btn-lg" style="text-decoration: none; font-weight: 800; font-size: 1.05rem; padding: 0.85rem 1.8rem;">
+          📞 9010737882 కి కాల్ చేయండి
         </a>
-        <a href="https://api.whatsapp.com/send?phone=919848012345&text=Hello%20UNIK%20NATURALS,%20I%20want%20to%20order%20pure%20cold-pressed%20oils!" target="_blank" class="btn btn-whatsapp-order btn-lg" style="text-decoration: none; font-size: 1.05rem; padding: 0.8rem 1.6rem;">
-          📲 Order on WhatsApp (వాట్సాప్ ఆర్డర్)
+        <a href="https://api.whatsapp.com/send?phone=919010737882&text=నమస్కారం%20UNIK%20NATURALS,%20నేను%20స్వచ్ఛమైన%20గానుగ%20నూనెలు%20మరియు%20పిండి%20గురించి%20తెలుసుకోవాలనుకుంటున్నాను" target="_blank" class="btn btn-whatsapp-order btn-lg" style="text-decoration: none; font-size: 1.05rem; padding: 0.85rem 1.8rem;">
+          💬 WhatsApp లో సంప్రదించండి
         </a>
       </div>
 
@@ -185,101 +127,330 @@
         <div class="feature-item">
           <div class="feature-icon">🪵</div>
           <div class="feature-text">
-            <strong>Wood Cold-Pressed</strong>
-            <span>సాంప్రదాయ గానుగ నూనెలు</span>
+            <strong>100% Wood Cold-Pressed</strong>
+            <span>సాంప్రదాయ లక్క గానుగ</span>
           </div>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🚫</div>
           <div class="feature-text">
-            <strong>0% Chemicals</strong>
+            <strong>0% Chemicals & Hexane</strong>
             <span>ఎలాంటి రసాయనాలు లేవు</span>
           </div>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🌾</div>
           <div class="feature-text">
-            <strong>Freshly Stone-Ground</strong>
-            <span>తాజా రాతి పిండి మిల్లు</span>
+            <strong>Stone-Ground Flour</strong>
+            <span>తాజా సాంప్రదాయ రాతి పిండి</span>
           </div>
         </div>
         <div class="feature-item">
-          <div class="feature-icon">⚡</div>
+          <div class="feature-icon">👁️</div>
           <div class="feature-text">
-            <strong>Fresh Daily Batches</strong>
-            <span>తాజా గానుగ బ్యాచులు</span>
+            <strong>Live Extraction</strong>
+            <span>మీ కళ్ల ముందే నూనె తీసి ఇస్తాము</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Storefront Catalog Section -->
-    <div id="storefront-catalog">
-      <div class="section-header">
-        <div class="section-title">
-          <h2>🌾 Pure Farm Products & Cold-Pressed Oils</h2>
-          <p>తాజా ఉత్పత్తులు • Freshly pressed oils, unpolished dals, and homemade snacks</p>
-        </div>
-        <div class="storefront-filters">
-          <button class="filter-chip active" data-cat="ALL">All Products (అన్నీ)</button>
-          <button class="filter-chip" data-cat="OIL">🛢️ Pure Oils (నూనెలు)</button>
-          <button class="filter-chip" data-cat="REPACK">🌾 Grains & Dals (పప్పులు)</button>
-          <button class="filter-chip" data-cat="SNACK">🥨 Traditional Snacks</button>
-          <button class="filter-chip" data-cat="CAKE">🌿 Oil Cake (పిండి చెక్క)</button>
-        </div>
-      </div>
+    <!-- 2. ABOUT UNIK NATURALS STORE -->
+    <div class="brand-intro-card">
+      <div class="intro-badge">✨ మా నిబద్ధత (Our Core Mission)</div>
+      <h2 class="intro-title">ఆరోగ్యకరమైన సమాజం కోసం <span>UNIK NATURALS</span></h2>
+      <p class="intro-lead">
+        ఈరోజు మార్కెట్లో దొరికే సాధారణ రిఫైన్డ్ నూనెల్లో కెమికల్ బ్లీచింగ్, హెగ్జేన్, లిక్విడ్ పారాఫిన్ వంటి హానికర రసాయనాలు కలిసి ఉంటున్నాయి. దీనివల్ల జీర్ణ సమస్యలు, గుండె జబ్బులు మరియు ఇతర అనారోగ్య సమస్యలు పెరుగుతున్నాయి. 
+        ఈ సమస్యకు పరిష్కారంగా, మన ప్రాచీన తెలుగు సంప్రదాయ లక్క గానుగ (Wooden Mara Chekku) పద్ధతిని తిరిగి తీసుకొస్తూ <strong>UNIK NATURALS</strong> ని స్థాపించాము.
+      </p>
+      <p class="intro-lead" style="margin-bottom: 0;">
+        మా వద్ద ఎటువంటి కల్తీ జరగదు. ఎవరైనా మా మిల్లుకు నేరుగా వచ్చి, స్వయంగా విత్తనాలను చూసి, వాళ్ల కళ్లెదుటే గానుగ నూనె మరియు రాతి పిండి తీసుకోవచ్చు. కస్టమర్ నమ్మకమే మాకు ప్రాణం!
+      </p>
 
-      <div class="storefront-grid" id="storefront-products-grid">
-        <!-- Dynamically rendered from /api/items -->
-        <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">
-          Loading fresh catalog items...
+      <div class="intro-features-row">
+        <div class="intro-feat-box">
+          <div class="intro-feat-icon">🌾</div>
+          <div class="intro-feat-content">
+            <strong>రైతుల నుండి సేకరణ</strong>
+            <span>స్థానిక రైతుల నుండి నాణ్యమైన ముడి విత్తనాలు</span>
+          </div>
+        </div>
+        <div class="intro-feat-box">
+          <div class="intro-feat-icon">🌡️</div>
+          <div class="intro-feat-content">
+            <strong>తక్కువ వేడి (Below 38°C)</strong>
+            <span>విటమిన్లు, ఎంజైములు మరియు పోషకాలు నశించవు</span>
+          </div>
+        </div>
+        <div class="intro-feat-box">
+          <div class="intro-feat-icon">☀️</div>
+          <div class="intro-feat-content">
+            <strong>సహజ ఎండలో తేరపట్టడం</strong>
+            <span>కెమికల్ ఫిల్టర్లు లేకుండా కాటన్ గుడ్డతో వడపోత</span>
+          </div>
+        </div>
+        <div class="intro-feat-box">
+          <div class="intro-feat-icon">🛡️</div>
+          <div class="intro-feat-content">
+            <strong>100% నమ్మకం & స్వచ్ఛత</strong>
+            <span>ప్రతి చుక్కలో ప్రకృతి స్వచ్ఛమైన ఆరోగ్యం</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Storefront Milling Services Section -->
-    <div id="storefront-milling" style="margin-bottom: 3rem;">
-      <div class="section-header">
-        <div class="section-title">
-          <h2>🌾 Custom Job-Work Milling Rates (పిండి మిల్లు చార్జీలు)</h2>
-          <p>Bring your own grains, spices, or seeds for high-grade stone milling & oil expelling</p>
+    <!-- 3. MANUFACTURING PROCESS (నూనెలు & పిండి తయారు చేసే విధానం) -->
+    <div class="process-showcase-section">
+      <div class="section-header" style="text-align: center; margin-bottom: 2rem;">
+        <div class="section-title" style="max-width: 800px; margin: 0 auto;">
+          <h2 style="font-size: 2rem; color: #fff;">🏭 మా తయారీ విధానం (Our Traditional Process)</h2>
+          <p style="color: var(--brand-gold-bright); font-size: 1rem; margin-top: 0.5rem;">
+            ప్రకృతి సిద్ధమైన పద్ధతిలో పూర్వీకుల సాంకేతికతతో స్వచ్ఛమైన ఉత్పత్తులు తయారు చేసే విధం
+          </p>
         </div>
       </div>
-      <div class="card" style="padding: 1.5rem; border: 1px solid var(--border);">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Service Name (సేవ పేరు)</th>
-              <th>Service Category</th>
-              <th>Rate / Unit (ధర)</th>
-              <th>Processing Time</th>
-            </tr>
-          </thead>
-          <tbody id="storefront-milling-tbody">
-            <tr><td colspan="4" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Loading milling rates...</td></tr>
-          </tbody>
-        </table>
+
+      <div class="process-grid">
+        <!-- Process Card 1: Wooden Cold Press Extraction -->
+        <div class="process-card">
+          <div class="process-card-img-wrap">
+            <img src="/uploads/wooden_cold_press.jpg" alt="సాంప్రదాయ లక్క చెక్క గానుగ యంత్రం" loading="lazy">
+            <span class="process-step-pill">విధానం 1 • లక్క గానుగ నూనెలు</span>
+          </div>
+          <div class="process-card-content">
+            <h3>🪵 లక్క చెక్క గానుగ నూనె తీత</h3>
+            <span class="process-subtitle">Wooden Mara Chekku Cold-Pressed Extraction</span>
+            <p>
+              సాధారణ ఇనుప ఎక్స్‌పెల్లర్ మిల్లుల్లో అధిక వేడి (100°C+) రావడం వల్ల నూనెలోని పోషకాలు కాలిపోతాయి. మా UNIK NATURALS లో సహజసిద్ధమైన వాగై చెక్క గానుగలో తక్కువ స్పీడ్‌తో విత్తనాలను నెమ్మదిగా రుబ్బుతూ నూనె తీస్తాము.
+            </p>
+            <ul class="process-points">
+              <li>రైతుల దగ్గరి నుండి మొదటి రకం వేరుశనగ, నువ్వులు, కొబ్బరి మాత్రమే వాడతాం.</li>
+              <li>ఉష్ణోగ్రత ఎప్పుడూ 38°C కంటే తక్కువగా ఉంచి తీస్తాము (కోల్డ్-ప్రెస్).</li>
+              <li>యాంటీఆక్సిడెంట్లు, విటమిన్ E, సహజ సువాసన 100% సురక్షితంగా ఉంటాయి.</li>
+              <li>సూర్యకాంతిలో 4 రోజులు సహజంగా తేరకట్టి, కాటన్ వస్త్రంతో ఫిల్టర్ చేస్తాము.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Process Card 2: Stone Ground Flour Milling -->
+        <div class="process-card">
+          <div class="process-card-img-wrap">
+            <img src="/uploads/stone_grain_mill.jpg" alt="సాంప్రదాయ రాతి పిండి మిల్లు" loading="lazy">
+            <span class="process-step-pill">విధానం 2 • రాతి తిరగలి పిండి</span>
+          </div>
+          <div class="process-card-content">
+            <h3>🌾 సాంప్రదాయ రాతి తిరగలి పిండి</h3>
+            <span class="process-subtitle">Slow Stone-Ground Milling Process</span>
+            <p>
+              హై-స్పీడ్ రోలర్ మిల్లుల్లో పిండి వేడెక్కి ఫైబర్ మరియు పోషకాలు నాశనమవుతాయి. మా వద్ద సహజ రాతి తిరగలి (Natural Stone Mill) పై నెమ్మదిగా పిండి పడతాము, దీనివల్ల తవుడు, పీచు పదార్థం (Fiber) చెక్కుచెదరకుండా ఉంటాయి.
+            </p>
+            <ul class="process-points">
+              <li>గోధుమలు, జొన్నలు, రాగులు, సజ్జలు శుభ్రం చేసి ఎండబెట్టి పిండి పడతాం.</li>
+              <li>రసాయనాలు లేదా బ్లీచింగ్ ఏజెంట్లు కలపని అసలైన సంపూర్ణ ధాన్యం పిండి.</li>
+              <li>మధుమేహం (Diabetes), జీర్ణ సమస్యలు ఉన్నవారికి అత్యుత్తమ ఆహారం.</li>
+              <li>మీరు తెచ్చుకున్న ధాన్యాలు కూడా మీ ఎదుటే శుభ్రంగా పిండి పట్టి ఇస్తాము.</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Contact & Store Location -->
-    <div id="storefront-contact" class="card" style="padding: 2rem; border: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(22, 70, 16, 0.25) 0%, rgba(14, 31, 18, 0.45) 100%);">
-      <div>
-        <h3 style="color: var(--brand-gold-bright); font-size: 1.3rem; margin-bottom: 0.5rem;">🏪 Visit Our Mill & Storefront</h3>
-        <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 0.5rem;">
-          <strong>UNIK NATURALS Oil Mill & Milling Center</strong><br>
-          📍 Main Bazaar, Shop #4, Bazaar Street, Telangana / AP<br>
-          🕒 Hours: Monday - Sunday: 7:00 AM - 9:00 PM
+    <!-- 4. PRODUCTS WE OFFER (మా వద్ద లభించే స్వచ్ఛమైన ఉత్పత్తులు) -->
+    <div style="margin-bottom: 3.5rem;">
+      <div class="section-header" style="text-align: center; margin-bottom: 2rem;">
+        <div class="section-title" style="max-width: 800px; margin: 0 auto;">
+          <h2 style="font-size: 2rem; color: #fff;">🌿 మా వద్ద లభించే ఉత్పత్తులు (Our Products Range)</h2>
+          <p style="color: var(--brand-gold-bright); font-size: 1rem; margin-top: 0.5rem;">
+            మీ కుటుంబ ఆరోగ్యాన్ని పరిరక్షించే కల్తీ లేని స్వచ్ఛమైన గ్రామీణ ఉత్పత్తులు
+          </p>
+        </div>
+      </div>
+
+      <div class="products-trust-grid">
+        <!-- Product 1: Groundnut Oil -->
+        <div class="product-trust-card">
+          <div class="product-trust-header">
+            <div class="product-trust-icon">🥜</div>
+            <div class="product-trust-title">
+              <h4>గానుగ వేరుశనగ నూనె</h4>
+              <span>Cold-Pressed Groundnut Oil</span>
+            </div>
+          </div>
+          <p>
+            మొదటి గ్రేడ్ నాటు వేరుశనగ పప్పుతో తీసిన గానుగ నూనె. మంచి సువాసన మరియు ఘుమఘుమలాడే రుచితో వంటలకు, వేపుళ్లకు అత్యుత్తమం. గుండె ఆరోగ్యానికి శ్రేయస్కరం.
+          </p>
+          <div class="product-trust-tags">
+            <span class="product-tag">100% ప్యూర్</span>
+            <span class="product-tag">రిచ్ విటమిన్ E</span>
+            <span class="product-tag">నో పామాయిల్</span>
+          </div>
+        </div>
+
+        <!-- Product 2: Sesame Oil -->
+        <div class="product-trust-card">
+          <div class="product-trust-header">
+            <div class="product-trust-icon">🌾</div>
+            <div class="product-trust-title">
+              <h4>గానుగ నువ్వుల నూనె</h4>
+              <span>Cold-Pressed Sesame (Gingelly) Oil</span>
+            </div>
+          </div>
+          <p>
+            స్వచ్ఛమైన నువ్వులు మరియు తాటి బెల్లం కలిపి ప్రాచీన పద్ధతిలో గానుగ ఆడించిన నూనె. ఎముకల బలానికి, శరీర చలువకు, ఆయుర్వేదానికి పరమ ఔషధం.
+          </p>
+          <div class="product-trust-tags">
+            <span class="product-tag">తాటి బెల్లం మేళవింపు</span>
+            <span class="product-tag">కాల్షియం సమృద్ధి</span>
+            <span class="product-tag">ఆహార & దీపారాధన</span>
+          </div>
+        </div>
+
+        <!-- Product 3: Coconut Oil -->
+        <div class="product-trust-card">
+          <div class="product-trust-header">
+            <div class="product-trust-icon">🥥</div>
+            <div class="product-trust-title">
+              <h4>గానుగ కొబ్బరి నూనె</h4>
+              <span>Pure Cold-Pressed Coconut Oil</span>
+            </div>
+          </div>
+          <p>
+            పచ్చి కొబ్బరి / ఎండు కొబ్బరి చిప్పల నుండి నేరుగా తీసిన సహజసిద్ధమైన కొబ్బరి నూనె. జుట్టు పెరుగుదలకు, చర్మ సంరక్షణకు మరియు కేరళ తరహా వంటలకు మేలైనది.
+          </p>
+          <div class="product-trust-tags">
+            <span class="product-tag">నో మినరల్ ఆయిల్</span>
+            <span class="product-tag">స్వచ్ఛమైన కొబ్బరి పరిమళం</span>
+            <span class="product-tag">మల్టీపర్పస్</span>
+          </div>
+        </div>
+
+        <!-- Product 4: Stone Ground Flours -->
+        <div class="product-trust-card">
+          <div class="product-trust-header">
+            <div class="product-trust-icon">🥣</div>
+            <div class="product-trust-title">
+              <h4>రాతి తిరగలి పిండి</h4>
+              <span>Fresh Stone-Ground Atta & Millets</span>
+            </div>
+          </div>
+          <p>
+            సంప్రదాయ రాతి తిరగలితో పట్టిన గోధుమ పిండి, జొన్న పిండి, రాగి పిండి, సజ్జ పిండి. సంపూర్ణ పీచు పదార్థంతో మెత్తని చపాతీలు మరియు రొట్టెలు తయారవుతాయి.
+          </p>
+          <div class="product-trust-tags">
+            <span class="product-tag">ఫుల్ ఫైబర్ & తవుడు</span>
+            <span class="product-tag">షుగర్ కంట్రోల్</span>
+            <span class="product-tag">తాజా పిండి</span>
+          </div>
+        </div>
+
+        <!-- Product 5: Farm Unpolished Dals -->
+        <div class="product-trust-card">
+          <div class="product-trust-header">
+            <div class="product-trust-icon">🌱</div>
+            <div class="product-trust-title">
+              <h4>పొట్టు పప్పులు & దినుసులు</h4>
+              <span>Farm Fresh Unpolished Dals</span>
+            </div>
+          </div>
+          <p>
+            రసాయన పాలిష్ చేయని సహజ నాటు కందిపప్పు, పొట్టు పెసరపప్పు, మినప్పప్పు. పప్పు ఉడకబెట్టినప్పుడు వచ్చే కమ్మని రుచి మరియు అసలైన ప్రోటీన్ పుష్కలం.
+          </p>
+          <div class="product-trust-tags">
+            <span class="product-tag">నో కెమికల్ కలర్</span>
+            <span class="product-tag">హై ప్రోటీన్</span>
+            <span class="product-tag">రైతు నాణ్యత</span>
+          </div>
+        </div>
+
+        <!-- Product 6: Organic Cattle Feed Oil Cake -->
+        <div class="product-trust-card">
+          <div class="product-trust-header">
+            <div class="product-trust-icon">🐮</div>
+            <div class="product-trust-title">
+              <h4>గానుగ పిండి చెక్క (పశువుల మేత)</h4>
+              <span>Organic Cattle Feed Oil Cake</span>
+            </div>
+          </div>
+          <p>
+            గానుగ నూనె తీసిన తర్వాత మిగిలిన సహజసిద్ధమైన వేరుశనగ మరియు నువ్వుల పిండి చెక్క. పాడి ఆవులు, గేదెలకు అత్యంత బలవర్ధకమైన ఆహారం; పాల దిగుబడి పెరుగుతుంది.
+          </p>
+          <div class="product-trust-tags">
+            <span class="product-tag">పాడి పశువులకు బలం</span>
+            <span class="product-tag">స్వచ్ఛమైన చెక్క</span>
+            <span class="product-tag">హోల్‌సేల్ లభ్యం</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. STORE LOCATION & CONTACT HERO (చిరునామా & సంప్రదించండి) -->
+    <div class="store-contact-hero" id="storefront-contact">
+      <div class="contact-left">
+        <span class="intro-badge">📍 మా షాప్ చిరునామా (Visit Our Mill)</span>
+        <h3>UNIK NATURALS</h3>
+        <p style="color: #cbd5e1; font-size: 1.05rem; line-height: 1.6;">
+          మా మిల్లు వద్దకు స్వయంగా విచ్చేసి, నూనె తీసే విధానాన్ని మీ కళ్లతో చూసి నమ్మకంతో కొనుగోలు చేయండి.
         </p>
-        <div style="display: flex; gap: 1rem; align-items: center; font-weight: 700;">
-          <span>📞 Phone: <a href="tel:9848012345" style="color: #4ade80; text-decoration: none;">9848012345</a></span>
-          <span>💬 WhatsApp: <a href="https://api.whatsapp.com/send?phone=919848012345" target="_blank" style="color: #25D366; text-decoration: none;">9848012345</a></span>
+
+        <div class="contact-address-box">
+          <strong style="color: var(--brand-gold-bright); font-size: 1.15rem; display: block; margin-bottom: 0.35rem;">
+            🏪 UNIK NATURALS Oil Mill & Store
+          </strong>
+          📍 RCM చర్చి దగ్గర (Near RCM Church),<br>
+          చోడవరం (Chodavaram), అనకాపల్లి జిల్లా - 531036,<br>
+          ఆంధ్రప్రదేశ్ (Andhra Pradesh).<br>
+          <span style="font-size: 0.95rem; color: #a7f3d0; margin-top: 0.4rem; display: block;">
+            🕒 తెరిచి ఉండు సమయాలు: సోమవారం నుండి ఆదివారం వరకు (ఉదయం 7:00 నుండి రాత్రి 9:00 వరకు)
+          </span>
+        </div>
+
+        <div class="contact-buttons-row">
+          <a href="tel:9010737882" class="btn-call-large">
+            <span>📞</span> 9010737882 కి కాల్ చేయండి
+          </a>
+          <a href="https://api.whatsapp.com/send?phone=919010737882&text=నమస్కారం%20UNIK%20NATURALS,%20నేను%20చోడవరం%20స్టోర్%20గురించి%20సంప్రదిస్తున్నాను" target="_blank" class="btn-wa-large">
+            <span>💬</span> వాట్సాప్ ఆర్డర్ / ఎంక్వైరీ
+          </a>
         </div>
       </div>
-      <a href="https://api.whatsapp.com/send?phone=919848012345&text=Hello%20UNIK%20NATURALS,%20I%20have%20an%20inquiry%20about%20your%20products" target="_blank" class="btn btn-whatsapp-order" style="padding: 0.9rem 1.8rem; font-size: 1rem;">
-        💬 Chat on WhatsApp with Shop
-      </a>
+
+      <div class="contact-right" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(243, 182, 56, 0.25); border-radius: var(--radius-md); padding: 1.75rem;">
+        <h4 style="color: var(--brand-gold-bright); font-size: 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          🛡️ కస్టమర్ నమ్మకానికి 4 సూత్రాలు
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+            <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; padding: 4px 8px; border-radius: 6px; font-weight: 800;">1</span>
+            <div>
+              <strong style="color: #fff; font-size: 0.95rem;">100% కల్తీ లేని హామీ</strong>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.15rem 0 0;">ఏ ఒక్క చుక్క మినరల్ ఆయిల్ లేదా ఇతర రసాయనాలు కలపబడవు.</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+            <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; padding: 4px 8px; border-radius: 6px; font-weight: 800;">2</span>
+            <div>
+              <strong style="color: #fff; font-size: 0.95rem;">లైవ్ ఆయిల్ మిల్లింగ్ దర్శనం</strong>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.15rem 0 0;">మీరు తెచ్చుకున్న విత్తనాలు లేదా మా విత్తనాలతో మీ ముందే నూనె తీస్తాము.</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+            <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; padding: 4px 8px; border-radius: 6px; font-weight: 800;">3</span>
+            <div>
+              <strong style="color: #fff; font-size: 0.95rem;">చోడవరం & చుట్టుపక్కల డోర్ డెలివరీ</strong>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.15rem 0 0;">వాట్సాప్ లేదా ఫోన్ కాల్ ద్వారా నేరుగా ఇంటికే డెలివరీ సదుపాయం.</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+            <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; padding: 4px 8px; border-radius: 6px; font-weight: 800;">4</span>
+            <div>
+              <strong style="color: #fff; font-size: 0.95rem;">రైతులకు మరియు గ్రామీణ కుటుంబాలకు అనుకూల ధరలు</strong>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.15rem 0 0;">దళారులు లేకుండా నేరుగా మిల్లు నుండి ప్రజల చేతుల్లోకి.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
   </section>
 
   <!-- ==================== ERP CONTAINER (Owner / Staff Management) ==================== -->

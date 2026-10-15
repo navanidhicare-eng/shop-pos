@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'customer_storefront.dart';
+import 'customer_auth_screen.dart';
 import 'online_orders_view.dart';
 
 void main() {
@@ -20,17 +21,34 @@ class StaffShopApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF164610),
+          seedColor: const Color(0xFF047857),
           brightness: Brightness.light,
-          primary: const Color(0xFF164610),
-          secondary: const Color(0xFFD39715),
+          primary: const Color(0xFF047857),
+          secondary: const Color(0xFFD97706),
+          surface: Colors.white,
         ),
         fontFamily: 'Roboto',
         fontFamilyFallback: const ['Noto Sans Telugu', 'sans-serif'],
         cardTheme: CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          elevation: 4,
+          indicatorColor: const Color(0xFFD1FAE5),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF064E3B));
+            }
+            return const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF64748B));
+          }),
         ),
       ),
       home: const StaffSessionGate(),
@@ -53,6 +71,10 @@ class _StaffSessionGateState extends State<StaffSessionGate> {
   String get _activeApiBase {
     try {
       if (Uri.base.hasAuthority && Uri.base.host.isNotEmpty) {
+        // If running under Flutter dev server on a random port (e.g. localhost:54321), connect to backend port 5000
+        if (Uri.base.port != 5000 && Uri.base.port != 80 && Uri.base.port != 443) {
+          return '${Uri.base.scheme}://${Uri.base.host}:5000/api';
+        }
         final port = Uri.base.hasPort ? ':${Uri.base.port}' : '';
         return '${Uri.base.scheme}://${Uri.base.host}$port/api';
       }
@@ -68,16 +90,9 @@ class _StaffSessionGateState extends State<StaffSessionGate> {
 
   void _checkExistingSession() {
     try {
-      final uri = Uri.base;
-      if (uri.queryParameters['mode'] == 'customer') {
-        setState(() {
-          _viewCustomerStore = true;
-          _isChecking = false;
-        });
-        return;
-      }
-
-      final rawUser = html.window.localStorage['unik_auth_user'] ?? html.window.sessionStorage['unik_auth_user'];
+      final rawUser = html.window.localStorage['unik_auth_user'] ??
+          html.window.localStorage['unik_customer_user'] ??
+          html.window.sessionStorage['unik_auth_user'];
       if (rawUser != null && rawUser.isNotEmpty) {
         final parsed = jsonDecode(rawUser);
         if (parsed is Map<String, dynamic>) {
@@ -89,6 +104,7 @@ class _StaffSessionGateState extends State<StaffSessionGate> {
         }
       }
 
+      final uri = Uri.base;
       if (uri.queryParameters['mode'] == 'staff') {
         setState(() {
           _isChecking = false;
@@ -99,6 +115,7 @@ class _StaffSessionGateState extends State<StaffSessionGate> {
     } catch (_) {}
 
     setState(() {
+      _currentUser = null;
       _isChecking = false;
     });
   }
@@ -109,10 +126,207 @@ class _StaffSessionGateState extends State<StaffSessionGate> {
     } catch (_) {}
   }
 
+  void _showStaffLoginDialog() {
+    final userCtrl = TextEditingController(text: 'staff1');
+    final passCtrl = TextEditingController(text: 'staff123');
+    bool isSubmitting = false;
+    String? errorMsg;
+    bool obscure = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF047857).withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.lock_person_outlined, color: Color(0xFF047857), size: 24),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('స్టాఫ్ లాగిన్', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('కౌంటర్ POS సిస్టమ్', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (errorMsg != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEE2E2),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFFCA5A5)),
+                    ),
+                    child: Text(
+                      errorMsg!,
+                      style: const TextStyle(color: Color(0xFF991B1B), fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+
+                // Quick role select chips
+                Row(
+                  children: [
+                    const Text('త్వరిత ఎంపిక:', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                    const SizedBox(width: 6),
+                    ActionChip(
+                      visualDensity: VisualDensity.compact,
+                      avatar: const Icon(Icons.person, size: 14),
+                      label: const Text('Staff', style: TextStyle(fontSize: 11)),
+                      onPressed: () {
+                        setModalState(() {
+                          userCtrl.text = 'staff1';
+                          passCtrl.text = 'staff123';
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    ActionChip(
+                      visualDensity: VisualDensity.compact,
+                      avatar: const Icon(Icons.admin_panel_settings, size: 14),
+                      label: const Text('Admin', style: TextStyle(fontSize: 11)),
+                      onPressed: () {
+                        setModalState(() {
+                          userCtrl.text = 'admin';
+                          passCtrl.text = 'admin123';
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                TextField(
+                  controller: userCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'యూజర్‌నేమ్ (Username)',
+                    prefixIcon: const Icon(Icons.account_circle_outlined, size: 20),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passCtrl,
+                  obscureText: obscure,
+                  decoration: InputDecoration(
+                    labelText: 'పాస్‌వర్డ్ (Password)',
+                    prefixIcon: const Icon(Icons.key_outlined, size: 20),
+                    suffixIcon: IconButton(
+                      icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, size: 20),
+                      onPressed: () => setModalState(() => obscure = !obscure),
+                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+              child: const Text('రద్దు', style: TextStyle(color: Color(0xFF64748B))),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF047857),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      final u = userCtrl.text.trim();
+                      final p = passCtrl.text.trim();
+                      if (u.isEmpty || p.isEmpty) {
+                        setModalState(() => errorMsg = 'యూజర్‌నేమ్ & పాస్‌వర్డ్ ఇవ్వండి');
+                        return;
+                      }
+
+                      setModalState(() {
+                        isSubmitting = true;
+                        errorMsg = null;
+                      });
+
+                      try {
+                        final res = await http.post(
+                          Uri.parse('$_activeApiBase/auth/login'),
+                          headers: {'Content-Type': 'application/json'},
+                          body: jsonEncode({'username': u, 'password': p}),
+                        );
+
+                        if (res.statusCode == 200) {
+                          final data = jsonDecode(res.body);
+                          if (data['user'] != null) {
+                            try {
+                              final uJson = jsonEncode(data['user']);
+                              html.window.localStorage['unik_auth_token'] = data['token'] ?? '';
+                              html.window.localStorage['unik_auth_user'] = uJson;
+                              html.window.sessionStorage['unik_auth_token'] = data['token'] ?? '';
+                              html.window.sessionStorage['unik_auth_user'] = uJson;
+                            } catch (_) {}
+
+                            if (mounted) {
+                              Navigator.pop(ctx);
+                              setState(() {
+                                _currentUser = data['user'];
+                                _viewCustomerStore = false;
+                              });
+                            }
+                            return;
+                          }
+                        }
+
+                        final errData = jsonDecode(res.body);
+                        setModalState(() {
+                          isSubmitting = false;
+                          errorMsg = errData['error'] ?? 'లాగిన్ విఫలమైంది (${res.statusCode})';
+                        });
+                      } catch (e) {
+                        setModalState(() {
+                          isSubmitting = false;
+                          errorMsg = 'సర్వర్ కనెక్ట్ అవ్వలేదు: $e';
+                        });
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('లాగిన్ అవ్వండి', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _handleLogout() {
     try {
       html.window.localStorage.remove('unik_auth_token');
       html.window.localStorage.remove('unik_auth_user');
+      html.window.localStorage.remove('unik_customer_token');
+      html.window.localStorage.remove('unik_customer_user');
       html.window.sessionStorage.remove('unik_auth_token');
       html.window.sessionStorage.remove('unik_auth_user');
     } catch (_) {}
@@ -120,21 +334,24 @@ class _StaffSessionGateState extends State<StaffSessionGate> {
       _currentUser = null;
       _viewCustomerStore = false;
     });
-    _redirectToUnifiedLogin();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isChecking) {
       return const Scaffold(
-        backgroundColor: Color(0xFF09130B),
+        backgroundColor: Color(0xFF047857),
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFF3B638)),
+          child: CircularProgressIndicator(color: Color(0xFFFBBF24)),
         ),
       );
     }
 
-    if (_currentUser != null && !_viewCustomerStore) {
+    final isStaffOrAdmin = _currentUser != null &&
+        (_currentUser!['role'] == 'ADMIN' || _currentUser!['role'] == 'STAFF');
+
+    // 1. If logged in as Staff/Admin and not viewing customer store -> Staff POS
+    if (isStaffOrAdmin && !_viewCustomerStore) {
       return MainStaffScreen(
         currentUser: _currentUser,
         onLogout: _handleLogout,
@@ -144,16 +361,39 @@ class _StaffSessionGateState extends State<StaffSessionGate> {
       );
     }
 
-    // Customer Online Storefront View
-    return CustomerStorefrontView(
+    // 2. If logged in as Customer (or staff previewing store) -> Products Storefront
+    if (_currentUser != null) {
+      return CustomerStorefrontView(
+        apiBase: _activeApiBase,
+        currentCustomer: _currentUser!['role'] == 'CUSTOMER' ? _currentUser : null,
+        onCustomerAuthChanged: (user) {
+          if (user == null) {
+            _handleLogout();
+          } else {
+            setState(() {
+              _currentUser = user;
+            });
+          }
+        },
+        onStaffLoginRequested: () {
+          if (isStaffOrAdmin) {
+            setState(() => _viewCustomerStore = false);
+          } else {
+            _showStaffLoginDialog();
+          }
+        },
+      );
+    }
+
+    // 3. If NOT logged in -> Dedicated Fullscreen Login & Registration Screen first!
+    return CustomerAuthScreen(
       apiBase: _activeApiBase,
-      onStaffLoginRequested: () {
-        if (_currentUser != null) {
-          setState(() => _viewCustomerStore = false);
-        } else {
-          _redirectToUnifiedLogin();
-        }
+      onAuthSuccess: (user) {
+        setState(() {
+          _currentUser = user;
+        });
       },
+      onStaffLoginRequested: _showStaffLoginDialog,
     );
   }
 }
@@ -183,8 +423,12 @@ class _MainStaffScreenState extends State<MainStaffScreen> {
     super.initState();
     try {
       if (Uri.base.hasAuthority && Uri.base.host.isNotEmpty) {
-        final port = Uri.base.hasPort ? ':${Uri.base.port}' : '';
-        _activeApiBase = '${Uri.base.scheme}://${Uri.base.host}$port/api';
+        if (Uri.base.port != 5000 && Uri.base.port != 80 && Uri.base.port != 443) {
+          _activeApiBase = '${Uri.base.scheme}://${Uri.base.host}:5000/api';
+        } else {
+          final port = Uri.base.hasPort ? ':${Uri.base.port}' : '';
+          _activeApiBase = '${Uri.base.scheme}://${Uri.base.host}$port/api';
+        }
       } else {
         _activeApiBase = 'http://localhost:5000/api';
       }
@@ -197,24 +441,36 @@ class _MainStaffScreenState extends State<MainStaffScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E1F12),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF064E3B), Color(0xFF047857)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         elevation: 0,
+        titleSpacing: 12,
         title: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+                border: Border.all(color: const Color(0xFFFBBF24), width: 1.5),
                 color: Colors.white,
+                boxShadow: const [
+                  BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                ],
               ),
               clipBehavior: Clip.antiAlias,
               child: Image.asset(
                 'assets/logo.png',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Text('🌿', style: TextStyle(fontSize: 18)),
+                  child: Text('🌿', style: TextStyle(fontSize: 20)),
                 ),
               ),
             ),
@@ -227,13 +483,13 @@ class _MainStaffScreenState extends State<MainStaffScreen> {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
                   ),
                 ),
                 Text(
-                  'Counter POS • Cold-Pressed Oils & Mill',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                  'కౌంటర్ POS • గానుగ నూనెలు & మిల్లింగ్',
+                  style: TextStyle(color: Color(0xFFA7F3D0), fontSize: 11, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -242,19 +498,19 @@ class _MainStaffScreenState extends State<MainStaffScreen> {
         actions: [
           if (widget.currentUser != null && widget.currentUser!['role'] == 'ADMIN')
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: const Color(0xFF09130B),
-                  elevation: 3,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  foregroundColor: const Color(0xFF1E293B),
+                  elevation: 1,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
-                icon: const Icon(Icons.dashboard, size: 16, color: Color(0xFF09130B)),
+                icon: const Icon(Icons.dashboard_outlined, size: 15, color: Color(0xFF1E293B)),
                 label: const Text(
-                  '📊 అడ్మిన్ ERP డ్యాష్‌బోర్డ్',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+                  'అడ్మిన్ ERP',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
                 onPressed: () {
                   try {
@@ -269,12 +525,13 @@ class _MainStaffScreenState extends State<MainStaffScreen> {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFF59E0B),
-                side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                foregroundColor: const Color(0xFFFEF3C7),
+                side: const BorderSide(color: Color(0xFFFBBF24), width: 1.2),
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               ),
-              icon: const Icon(Icons.storefront, size: 15, color: Color(0xFFF59E0B)),
+              icon: const Icon(Icons.storefront, size: 15, color: Color(0xFFFBBF24)),
               label: const Text(
                 '🛍️ కస్టమర్ షాప్',
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
@@ -287,17 +544,21 @@ class _MainStaffScreenState extends State<MainStaffScreen> {
 
           // Current User Profile Badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 3),
             decoration: BoxDecoration(
-              color: const Color(0xFF164610),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(widget.currentUser?['role'] == 'ADMIN' ? Icons.workspace_premium : Icons.person, size: 14, color: const Color(0xFFF59E0B)),
+                Icon(
+                  widget.currentUser?['role'] == 'ADMIN' ? Icons.verified_user : Icons.person_outline,
+                  size: 14,
+                  color: const Color(0xFFFBBF24),
+                ),
                 const SizedBox(width: 4),
                 Text(
                   widget.currentUser != null ? (widget.currentUser!['name'] ?? widget.currentUser!['username'] ?? 'Staff') : 'Staff',
@@ -307,28 +568,28 @@ class _MainStaffScreenState extends State<MainStaffScreen> {
             ),
           ),
 
-          // Prominent Red Logout Button
+          // Prominent Logout Button
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
+                backgroundColor: const Color(0xFFEF4444),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                elevation: 0,
               ),
-              icon: const Icon(Icons.logout, size: 15),
+              icon: const Icon(Icons.logout, size: 14),
               label: const Text(
                 'లాగౌట్',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
               ),
               onPressed: _showLogoutDialog,
             ),
           ),
 
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white70),
+            icon: const Icon(Icons.settings_outlined, color: Colors.white),
             onPressed: _showSettingsDialog,
             tooltip: 'సర్వర్ సెట్టింగ్స్',
           ),
@@ -1848,106 +2109,125 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
     return Column(
       children: [
         // Category Pills Filter
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            children: [
-              _buildCategoryChip('ALL', 'అన్నీ (All)'),
-              _buildCategoryChip('OIL', '🛢️ ఆయిల్స్'),
-              _buildCategoryChip('REPACK', '📦 రీప్యాక్డ్'),
-              _buildCategoryChip('SNACK', '🍿 స్నాక్స్'),
-              _buildCategoryChip('CAKE', '🌾 నూనె చెక్క'),
-            ],
+        Container(
+          width: double.infinity,
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                _buildCategoryChip('ALL', '🌟 అన్నీ'),
+                _buildCategoryChip('OIL', '🛢️ గానుగ నూనెలు'),
+                _buildCategoryChip('REPACK', '🌾 పప్పులు & గింజలు'),
+                _buildCategoryChip('SNACK', '🍿 తాజా స్నాక్స్'),
+                _buildCategoryChip('CAKE', '🥜 నూనె చెక్క'),
+              ],
+            ),
           ),
         ),
 
         // Quick Action: Add Milling Service directly to this Bill
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-          child: Material(
-            color: const Color(0xFF064E3B),
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: _showAddMillingDialog,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF059669),
-                        shape: BoxShape.circle,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF064E3B), Color(0xFF047857)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: _showAddMillingDialog,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFFBBF24), width: 1.2),
+                        ),
+                        child: const Icon(Icons.grain, color: Color(0xFFFBBF24), size: 20),
                       ),
-                      child: const Icon(Icons.grain, color: Colors.white, size: 18),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                '🌾 పిండి / మిల్లింగ్ కూలి చేర్చు',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              if (_millingCart.isNotEmpty) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF59E0B),
-                                    borderRadius: BorderRadius.circular(10),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text(
+                                  '🌾 పిండి / మిల్లింగ్ కూలి చేర్చు',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
                                   ),
-                                  child: Text(
-                                    '${_millingCart.length} చేర్చబడ్డాయి',
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
+                                ),
+                                if (_millingCart.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF59E0B),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '${_millingCart.length} చేర్చబడ్డాయి',
+                                      style: const TextStyle(
+                                        color: Color(0xFF1E293B),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ],
-                            ],
-                          ),
-                          const Text(
-                            'గోధుమ, రాగులు, కారం, నూనె గానుగ కూలి ఒకే బిల్లులో వేయండి',
-                            style: TextStyle(color: Color(0xFFA7F3D0), fontSize: 10),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.add, size: 14, color: Colors.black),
-                          SizedBox(width: 2),
-                          Text(
-                            'కూలి చేర్చు',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            const Text(
+                              'గోధుమ, రాగులు, కారం, నూనె గానుగ కూలి ఒకే బిల్లులో సులభంగా వేయండి',
+                              style: TextStyle(color: Color(0xFFA7F3D0), fontSize: 11),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.add, size: 14, color: Color(0xFF1E293B)),
+                            SizedBox(width: 2),
+                            Text(
+                              'కూలి చేర్చు',
+                              style: TextStyle(
+                                color: Color(0xFF1E293B),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1957,15 +2237,19 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
         // Product Grid
         Expanded(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF047857)))
               : filteredGroups.isEmpty
-                  ? const Center(child: Text('సరుకులు లేవు'))
+                  ? const Center(
+                      child: Text(
+                        'సరుకులు లేవు',
+                        style: TextStyle(color: Color(0xFF64748B), fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
+                    )
                   : LayoutBuilder(
                       builder: (context, constraints) {
                         final width = constraints.maxWidth;
-                        // Always 2 items per row as requested ("varusaku 2 undalaga")
                         const crossAxisCount = 2;
-                        final aspectRatio = width >= 500 ? 1.05 : 0.80;
+                        final aspectRatio = width >= 500 ? 1.05 : 0.78;
 
                         return GridView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -1982,19 +2266,26 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
 
                             return InkWell(
                               onTap: () => _openVariantBottomSheet(group),
-                              borderRadius: BorderRadius.circular(14),
-                              child: Card(
-                                elevation: inCartQty > 0 ? 4 : 2,
-                                color: inCartQty > 0 ? const Color(0xFFFEF9C3) : Colors.white,
-                                margin: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  side: BorderSide(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
                                     color: inCartQty > 0
-                                        ? const Color(0xFFD97706)
-                                        : const Color(0xFFE5E7EB),
+                                        ? const Color(0xFF047857)
+                                        : const Color(0xFFE2E8F0),
                                     width: inCartQty > 0 ? 2 : 1,
                                   ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: inCartQty > 0
+                                          ? const Color(0x1A047857)
+                                          : const Color(0x0A000000),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 clipBehavior: Clip.antiAlias,
                                 child: Column(
@@ -2090,7 +2381,7 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 13,
-                                                    color: Color(0xFF111827),
+                                                    color: Color(0xFF0F172A),
                                                   ),
                                                 ),
                                                 Text(
@@ -2098,7 +2389,7 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
                                                   style: const TextStyle(
-                                                    color: Color(0xFF6B7280),
+                                                    color: Color(0xFF64748B),
                                                     fontSize: 10,
                                                   ),
                                                 ),
@@ -2114,18 +2405,18 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
                                                       ? '₹${group.minPrice.toInt()}'
                                                       : '₹${group.minPrice.toInt()} నుండి',
                                                   style: const TextStyle(
-                                                    color: Color(0xFF164610),
+                                                    color: Color(0xFF047857),
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.w900,
                                                   ),
                                                 ),
                                                 Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                   decoration: BoxDecoration(
                                                     color: inCartQty > 0
                                                         ? const Color(0xFFD97706)
-                                                        : const Color(0xFF164610),
-                                                    borderRadius: BorderRadius.circular(8),
+                                                        : const Color(0xFF047857),
+                                                    borderRadius: BorderRadius.circular(20),
                                                   ),
                                                   child: Row(
                                                     mainAxisSize: MainAxisSize.min,
@@ -2162,13 +2453,14 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
         // Bottom Fast Checkout Panel
         if (_cart.isNotEmpty || _millingCart.isNotEmpty)
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
             decoration: BoxDecoration(
-              color: const Color(0xFF111827),
+              color: const Color(0xFF064E3B),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 10,
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 16,
                   offset: const Offset(0, -4),
                 )
               ],
@@ -2182,49 +2474,66 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
                     children: [
                       InkWell(
                         onTap: _showCartReviewModal,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           child: Row(
                             children: [
                               IconButton(
                                 visualDensity: VisualDensity.compact,
-                                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: const Icon(Icons.delete_outline, color: Color(0xFFF87171), size: 18),
                                 onPressed: () => setState(() {
                                   _cart.clear();
                                   _millingCart.clear();
                                 }),
                                 tooltip: 'ఖాళీ చేయి',
                               ),
+                              const SizedBox(width: 6),
                               Text(
                                 '$_cartItemCount ఐటమ్స్',
                                 style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                               ),
-                              const SizedBox(width: 4),
                               const Icon(Icons.arrow_drop_up, color: Colors.white70, size: 20),
                             ],
                           ),
                         ),
                       ),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF047857),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFFBBF24),
+                          side: const BorderSide(color: Color(0xFFFBBF24)),
+                          backgroundColor: Colors.white.withValues(alpha: 0.08),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           visualDensity: VisualDensity.compact,
                         ),
                         onPressed: _showAddMillingDialog,
-                        icon: const Icon(Icons.grain, size: 15),
+                        icon: const Icon(Icons.grain, size: 14),
                         label: const Text('+ మిల్లింగ్', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                       ),
-                      Text(
-                        'మొత్తం: ₹${_cartTotal.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          color: Color(0xFFFBBF24),
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          const Text(
+                            'మొత్తం: ',
+                            style: TextStyle(color: Color(0xFFA7F3D0), fontSize: 13),
+                          ),
+                          Text(
+                            '₹${_cartTotal.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              color: Color(0xFFFBBF24),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -2239,6 +2548,7 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 2,
                           ),
                           onPressed: () => _processSale('CASH'),
                           icon: const Icon(Icons.payments_outlined, size: 18),
@@ -2258,6 +2568,7 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 2,
                           ),
                           onPressed: () => _processSale('UPI'),
                           icon: const Icon(Icons.qr_code_2, size: 18),
@@ -2277,6 +2588,7 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 2,
                           ),
                           onPressed: () => _showCreditSaleDialog(),
                           icon: const Icon(Icons.menu_book, size: 18),
@@ -2300,19 +2612,40 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
   Widget _buildCategoryChip(String catKey, String label) {
     final isSelected = _selectedCategory == catKey;
     return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: FilterChip(
-        selected: isSelected,
-        label: Text(label),
-        selectedColor: const Color(0xFFF59E0B),
-        labelStyle: TextStyle(
-          color: isSelected ? Colors.white : Colors.black87,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 12,
-        ),
-        onSelected: (_) {
+      padding: const EdgeInsets.only(right: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
           setState(() => _selectedCategory = catKey);
         },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF047857) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF047857) : const Color(0xFFCBD5E1),
+              width: 1.2,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF047857).withValues(alpha: 0.25),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    )
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : const Color(0xFF334155),
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -2320,10 +2653,20 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
   String _getCategoryIcon(String cat) {
     switch (cat) {
       case 'OIL': return '🛢️';
-      case 'REPACK': return '📦';
+      case 'REPACK': return '🌾';
       case 'SNACK': return '🍿';
-      case 'CAKE': return '🌾';
+      case 'CAKE': return '🥜';
       default: return '🛍️';
+    }
+  }
+
+  Color _getCategoryBgColor(String cat) {
+    switch (cat) {
+      case 'OIL': return const Color(0xFFFEF3C7);
+      case 'REPACK': return const Color(0xFFDCFCE7);
+      case 'SNACK': return const Color(0xFFF1F5F9);
+      case 'CAKE': return const Color(0xFFFFEDD5);
+      default: return const Color(0xFFF8FAFC);
     }
   }
 
@@ -2346,10 +2689,10 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
             return Image.asset(
               fallbackAsset,
               fit: BoxFit.cover,
-              errorBuilder: (c, e, s) => _buildFallbackEmoji(catStr),
+              errorBuilder: (c, e, s) => _buildCategoryIllustration(catStr),
             );
           }
-          return _buildFallbackEmoji(catStr);
+          return _buildCategoryIllustration(catStr);
         },
       );
     }
@@ -2359,10 +2702,21 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
       return Image.asset(
         fallbackAsset,
         fit: BoxFit.cover,
-        errorBuilder: (c, e, s) => _buildFallbackEmoji(catStr),
+        errorBuilder: (c, e, s) => _buildCategoryIllustration(catStr),
       );
     }
-    return _buildFallbackEmoji(catStr);
+    return _buildCategoryIllustration(catStr);
+  }
+
+  Widget _buildCategoryIllustration(String category) {
+    final bgColor = _getCategoryBgColor(category);
+    final icon = _getCategoryIcon(category);
+    return Container(
+      color: bgColor,
+      child: Center(
+        child: Text(icon, style: const TextStyle(fontSize: 42)),
+      ),
+    );
   }
 
   String? _getFallbackAsset(String category) {
@@ -2378,18 +2732,6 @@ class _ShopRetailSalesViewState extends State<ShopRetailSalesView> {
       default:
         return null;
     }
-  }
-
-  Widget _buildFallbackEmoji(String category) {
-    return Container(
-      color: const Color(0xFFF3F4F6),
-      child: Center(
-        child: Text(
-          _getCategoryIcon(category),
-          style: const TextStyle(fontSize: 40),
-        ),
-      ),
-    );
   }
 }
 

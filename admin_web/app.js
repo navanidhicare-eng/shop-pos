@@ -155,7 +155,7 @@ async function loadOverview() {
   }
 }
 
-document.getElementById('pnl-range-select').addEventListener('change', loadOverview);
+document.getElementById('pnl-range-select')?.addEventListener('change', loadOverview);
 
 // ==================== 2. PRODUCTION BATCHES & BOTTLE COSTING ====================
 async function loadBatches() {
@@ -372,7 +372,7 @@ function formatNum(val) {
   return Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-document.getElementById('form-batch').addEventListener('submit', async (e) => {
+document.getElementById('form-batch')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const startTime = document.getElementById('batch-start-time')?.value || null;
   const endTime = document.getElementById('batch-end-time')?.value || null;
@@ -764,7 +764,7 @@ window.openStockEdit = function(id, name, currentQty, price, cost) {
   document.getElementById('modal-stock').classList.add('active');
 };
 
-document.getElementById('form-stock').addEventListener('submit', async (e) => {
+document.getElementById('form-stock')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const id = document.getElementById('stock-item-id').value;
   const newQty = document.getElementById('stock-item-qty').value;
@@ -801,7 +801,7 @@ window.openPhotoModal = function(id, name, currentUrl) {
   document.getElementById('modal-item-photo').classList.add('active');
 };
 
-document.getElementById('photo-file-input').addEventListener('change', function(e) {
+document.getElementById('photo-file-input')?.addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (file) {
     const reader = new FileReader();
@@ -812,13 +812,13 @@ document.getElementById('photo-file-input').addEventListener('change', function(
   }
 });
 
-document.getElementById('photo-url-input').addEventListener('input', function(e) {
+document.getElementById('photo-url-input')?.addEventListener('input', function(e) {
   if (e.target.value) {
     document.getElementById('photo-preview').src = e.target.value;
   }
 });
 
-document.getElementById('form-item-photo').addEventListener('submit', async function(e) {
+document.getElementById('form-item-photo')?.addEventListener('submit', async function(e) {
   e.preventDefault();
   const id = document.getElementById('photo-item-id').value;
   const fileInput = document.getElementById('photo-file-input');
@@ -861,7 +861,7 @@ document.getElementById('form-item-photo').addEventListener('submit', async func
 });
 
 // New Product Photo Preview & Form Submit
-document.getElementById('new-prod-file-input').addEventListener('change', function(e) {
+document.getElementById('new-prod-file-input')?.addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (file) {
     const reader = new FileReader();
@@ -872,13 +872,13 @@ document.getElementById('new-prod-file-input').addEventListener('change', functi
   }
 });
 
-document.getElementById('new-prod-url-input').addEventListener('input', function(e) {
+document.getElementById('new-prod-url-input')?.addEventListener('input', function(e) {
   if (e.target.value) {
     document.getElementById('new-prod-preview').src = e.target.value;
   }
 });
 
-document.getElementById('form-new-product').addEventListener('submit', async function(e) {
+document.getElementById('form-new-product')?.addEventListener('submit', async function(e) {
   e.preventDefault();
   const fileInput = document.getElementById('new-prod-file-input');
   const urlInput = document.getElementById('new-prod-url-input');
@@ -928,7 +928,7 @@ document.getElementById('form-new-product').addEventListener('submit', async fun
 });
 
 // Bottling Form Submit
-document.getElementById('form-bottling').addEventListener('submit', async (e) => {
+document.getElementById('form-bottling')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
     item_id: document.getElementById('bottling-item-id').value,
@@ -1152,7 +1152,7 @@ async function loadExpenses() {
   }
 }
 
-document.getElementById('form-expense').addEventListener('submit', async (e) => {
+document.getElementById('form-expense')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
     category: document.getElementById('expense-category').value,
@@ -1371,7 +1371,7 @@ window.sendKhataWhatsApp = function(name, phone, due) {
 };
 
 // Form: Receive Payment Submit
-document.getElementById('form-receive-payment').addEventListener('submit', async function(e) {
+document.getElementById('form-receive-payment')?.addEventListener('submit', async function(e) {
   e.preventDefault();
   const id = document.getElementById('pay-customer-id').value;
   const amount = Number(document.getElementById('pay-amount-input').value);
@@ -1399,7 +1399,7 @@ document.getElementById('form-receive-payment').addEventListener('submit', async
 });
 
 // Form: Create New Customer Submit
-document.getElementById('form-new-customer').addEventListener('submit', async function(e) {
+document.getElementById('form-new-customer')?.addEventListener('submit', async function(e) {
   e.preventDefault();
   const payload = {
     name: document.getElementById('new-cust-name').value.trim(),
@@ -1439,7 +1439,7 @@ document.getElementById('khata-search-input')?.addEventListener('input', functio
 });
 
 // Refresh button
-document.getElementById('btn-refresh').addEventListener('click', () => {
+document.getElementById('btn-refresh')?.addEventListener('click', () => {
   loadOverview();
   showToast('Dashboard data refreshed!');
 });
@@ -1496,7 +1496,7 @@ function updateAuthUI() {
     if (userProfileBadge) userProfileBadge.style.display = 'none';
 
     if (logoutBtn) {
-      if (authLabel) authLabel.textContent = 'లాగిన్ / Login';
+      if (authLabel) authLabel.textContent = 'Login';
       logoutBtn.style.background = 'linear-gradient(135deg, #D39715 0%, #A6730A 100%)';
     }
     return;
@@ -1527,7 +1527,7 @@ function updateAuthUI() {
   }
 
   if (logoutBtn) {
-    if (authLabel) authLabel.textContent = 'లాగౌట్ / Logout';
+    if (authLabel) authLabel.textContent = 'Logout';
     logoutBtn.style.background = 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)';
   }
 
@@ -1557,23 +1557,6 @@ document.getElementById('btn-toggle-pw')?.addEventListener('click', () => {
   }
 });
 
-// Demo autofill buttons
-document.getElementById('btn-demo-admin')?.addEventListener('click', () => {
-  const userIn = document.getElementById('login-username');
-  const passIn = document.getElementById('login-password');
-  if (userIn) userIn.value = 'admin';
-  if (passIn) passIn.value = 'admin123';
-  document.getElementById('auth-form')?.dispatchEvent(new Event('submit'));
-});
-
-document.getElementById('btn-demo-staff')?.addEventListener('click', () => {
-  const userIn = document.getElementById('login-username');
-  const passIn = document.getElementById('login-password');
-  if (userIn) userIn.value = 'staff';
-  if (passIn) passIn.value = 'staff123';
-  document.getElementById('auth-form')?.dispatchEvent(new Event('submit'));
-});
-
 // Handle Login Form Submission
 document.getElementById('auth-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1586,7 +1569,7 @@ document.getElementById('auth-form')?.addEventListener('submit', async (e) => {
   if (errEl) errEl.style.display = 'none';
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ ధృవీకరిస్తోంది... / Logging in...';
+    submitBtn.textContent = '⏳ Logging in...';
   }
 
   try {
@@ -1602,14 +1585,14 @@ document.getElementById('auth-form')?.addEventListener('submit', async (e) => {
 
       if (data.user.role === 'STAFF') {
         if (submitBtn) {
-          submitBtn.textContent = '✅ POS బిల్లింగ్ ఓపెన్ అవుతోంది...';
+          submitBtn.textContent = '✅ Opening POS Billing...';
         }
         window.location.href = '/pos/';
         return;
       }
 
       updateAuthUI();
-      showToast(`స్వాగతం (Welcome), ${data.user.name}!`);
+      showToast(`Welcome, ${data.user.name}!`);
       loadOverview();
     } else {
       if (errEl) {
@@ -1625,7 +1608,7 @@ document.getElementById('auth-form')?.addEventListener('submit', async (e) => {
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = '🚀 లాగిన్ అవ్వండి / Login';
+      submitBtn.textContent = '🚀 Login';
     }
   }
 });
@@ -1640,12 +1623,53 @@ function triggerAuthAction() {
   } else {
     const authModal = document.getElementById('auth-modal');
     if (authModal) authModal.classList.remove('hidden');
+    const uInput = document.getElementById('login-username');
+    if (uInput) setTimeout(() => uInput.focus(), 100);
   }
 }
 
 document.getElementById('btn-header-logout')?.addEventListener('click', triggerAuthAction);
 document.getElementById('btn-logout')?.addEventListener('click', triggerAuthAction);
 document.getElementById('user-profile-badge')?.addEventListener('click', triggerAuthAction);
+
+// Close modal handlers
+document.getElementById('btn-close-auth')?.addEventListener('click', () => {
+  document.getElementById('auth-modal')?.classList.add('hidden');
+});
+document.getElementById('auth-modal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'auth-modal') {
+    e.target.classList.add('hidden');
+  }
+});
+
+// Toggle between storefront & ERP
+document.getElementById('btn-toggle-view')?.addEventListener('click', () => {
+  const user = getCurrentUser();
+  if (!user) {
+    triggerAuthAction();
+    return;
+  }
+  const erpContainer = document.getElementById('erp-container');
+  const storefrontContainer = document.getElementById('storefront-container');
+  const navTabs = document.getElementById('nav-tabs');
+  const storefrontNavLinks = document.getElementById('storefront-nav-links');
+  const toggleViewText = document.getElementById('toggle-view-text');
+  const isErpActive = erpContainer && erpContainer.style.display !== 'none';
+
+  if (isErpActive) {
+    erpContainer.style.display = 'none';
+    if (navTabs) navTabs.style.display = 'none';
+    storefrontContainer.style.display = 'block';
+    if (storefrontNavLinks) storefrontNavLinks.style.display = 'flex';
+    if (toggleViewText) toggleViewText.textContent = '👑 Owner ERP';
+  } else {
+    erpContainer.style.display = 'block';
+    if (navTabs) navTabs.style.display = 'flex';
+    storefrontContainer.style.display = 'none';
+    if (storefrontNavLinks) storefrontNavLinks.style.display = 'none';
+    if (toggleViewText) toggleViewText.textContent = '🛍️ View Storefront';
+  }
+});
 
 // ==================== USER MANAGEMENT TAB & CRUD ====================
 

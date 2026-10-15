@@ -205,6 +205,7 @@ async function initPostgresDatabase() {
   await pool.query('ALTER TABLE items ADD COLUMN IF NOT EXISTS group_name_te TEXT;');
   await pool.query('ALTER TABLE items ADD COLUMN IF NOT EXISTS variant_name TEXT;');
   await pool.query('ALTER TABLE items ADD COLUMN IF NOT EXISTS variant_name_te TEXT;');
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;');
 
   // 2. Milling Services
   await pool.query(`
@@ -628,6 +629,7 @@ function initSqliteDatabase() {
     sqliteDb.run("ALTER TABLE oil_batches ADD COLUMN end_time TEXT", () => {});
     sqliteDb.run("ALTER TABLE oil_batches ADD COLUMN duration_minutes INTEGER", () => {});
     sqliteDb.run("ALTER TABLE oil_batches ADD COLUMN transport_cost REAL DEFAULT 0", () => {});
+    sqliteDb.run("ALTER TABLE users ADD COLUMN address TEXT", () => {});
 
     // 7. Bottling Logs
     sqliteDb.run(`

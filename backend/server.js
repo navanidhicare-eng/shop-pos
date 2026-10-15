@@ -81,16 +81,17 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
+      return res.status(400).json({ error: 'Username/Phone and password are required' });
     }
 
+    const trimmed = username.trim();
     const user = await dbGet(
-      'SELECT id, username, password, name, name_te, role, phone, is_active FROM users WHERE LOWER(username) = LOWER(?)',
-      [username.trim()]
+      'SELECT id, username, password, name, name_te, role, phone, address, is_active FROM users WHERE LOWER(username) = LOWER(?) OR phone = ?',
+      [trimmed, trimmed]
     );
 
     if (!user) {
-      return res.status(401).json({ error: 'యూజర్ నేమ్ లేదా పాస్‌వర్డ్ తప్పు (Invalid username or password)' });
+      return res.status(401).json({ error: 'యూజర్ నేమ్ లేదా మొబైల్ నంబర్ సరిపోలలేదు (Invalid username or mobile)' });
     }
 
     if (user.password !== password) {
@@ -110,9 +111,87 @@ app.post('/api/auth/login', async (req, res) => {
         id: user.id,
         username: user.username,
         name: user.name,
-        name_te: user.name_te,
+        name_te: user.name_te || user.name,
         role: user.role,
-        phone: user.phone
+        phone: user.phone || '',
+        address: user.address || ''
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { username, password, name, name_te, phone, address } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'దయచేసి మీ పూర్తి పేరు నమోదు చేయండి (Full name required)' });
+    }
+    if (!phone || phone.trim().length < 10) {
+      return res.status(400).json({ error: 'దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ నమోదు చేయండి (Valid 10-digit mobile number required)' });
+    }
+    if (!password || password.trim().length < 4) {
+      return res.status(400).json({ error: 'పాస్‌వర్డ్ కనీసం 4 అక్షరాలు ఉండాలి (Password must be at least 4 characters)' });
+    }
+
+    const cleanPhone = phone.trim();
+    const cleanUsername = (username && username.trim()) ? username.trim() : cleanPhone;
+    const cleanName = name.trim();
+    const cleanAddress = address ? address.trim() : '';
+
+    // Check if username already exists
+    const existingUser = await dbGet(
+      'SELECT id FROM users WHERE LOWER(username) = LOWER(?)',
+      [cleanUsername]
+    );
+    if (existingUser) {
+      return res.status(400).json({ error: 'ఈ యూజర్‌నేమ్ ఇప్పటికే వాడుకలో ఉంది. దయచేసి మరొకటి ఎంచుకోండి. (Username already taken)' });
+    }
+
+    // Check if phone already registered in users
+    const existingPhone = await dbGet(
+      'SELECT id FROM users WHERE phone = ?',
+      [cleanPhone]
+    );
+    if (existingPhone) {
+      return res.status(400).json({ error: 'ఈ మొబైల్ నంబర్‌తో ఖాతా ఇప్పటికే ఉంది. దయచేసి లాగిన్ అవ్వండి. (Account with this mobile already exists)' });
+    }
+
+    // Insert into users table with CUSTOMER role
+    const insertResult = await dbRun(
+      'INSERT INTO users (username, password, name, name_te, role, phone, address, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [cleanUsername, password.trim(), cleanName, name_te || cleanName, 'CUSTOMER', cleanPhone, cleanAddress, 1]
+    );
+
+    const newUserId = insertResult.lastID;
+
+    // Check / Sync with customers table for Khata & Order management
+    const existingCustomer = await dbGet('SELECT id FROM customers WHERE phone = ?', [cleanPhone]);
+    if (!existingCustomer) {
+      await dbRun(
+        'INSERT INTO customers (name, name_te, phone, address, total_credit_due, credit_limit) VALUES (?, ?, ?, ?, 0, 5000)',
+        [cleanName, name_te || cleanName, cleanPhone, cleanAddress]
+      );
+    } else if (cleanAddress) {
+      await dbRun("UPDATE customers SET address = ? WHERE phone = ? AND (address IS NULL OR address = '')", [cleanAddress, cleanPhone]);
+    }
+
+    const token = Buffer.from(`${newUserId}:${cleanUsername}:${Date.now()}`).toString('base64');
+
+    res.json({
+      success: true,
+      message: 'ఖాతా విజయవంతంగా సృష్టించబడింది (Registration successful)',
+      token,
+      user: {
+        id: newUserId,
+        username: cleanUsername,
+        name: cleanName,
+        name_te: name_te || cleanName,
+        role: 'CUSTOMER',
+        phone: cleanPhone,
+        address: cleanAddress
       }
     });
   } catch (err) {
@@ -131,7 +210,7 @@ app.get('/api/auth/me', async (req, res) => {
     const [userId] = decoded.split(':');
 
     const user = await dbGet(
-      'SELECT id, username, name, name_te, role, phone, is_active FROM users WHERE id = ?',
+      'SELECT id, username, name, name_te, role, phone, address, is_active FROM users WHERE id = ?',
       [userId]
     );
 
@@ -146,7 +225,8 @@ app.get('/api/auth/me', async (req, res) => {
         name: user.name,
         name_te: user.name_te,
         role: user.role,
-        phone: user.phone
+        phone: user.phone || '',
+        address: user.address || ''
       }
     });
   } catch (err) {
